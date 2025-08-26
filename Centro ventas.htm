@@ -190,7 +190,7 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-user mr-1"></i>Cliente</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-user mr-1"></i>Cliente (opcional)</label>
               <div class="relative">
                 <input type="text" id="cliente-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Buscar cliente...">
                 <input type="hidden" id="cliente-id">
@@ -480,6 +480,62 @@
     <section id="configuracion-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Configuración</h1>
       
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">Seguridad</h2>
+        
+        <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
+          <form id="cambiar-contrasena-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña actual</label>
+              <input type="password" id="current-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
+              <input type="password" id="new-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar nueva contraseña</label>
+              <input type="password" id="confirm-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
+                <i class="fas fa-lock mr-1"></i> Cambiar Contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">Bloqueo de Secciones</h2>
+        <div class="space-y-2">
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-ventas" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-ventas" class="ml-2 text-sm text-gray-700">Ventas</label>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-productos" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-productos" class="ml-2 text-sm text-gray-700">Productos</label>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-clientes" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-clientes" class="ml-2 text-sm text-gray-700">Clientes</label>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-resumen" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-resumen" class="ml-2 text-sm text-gray-700">Resumen & Análisis</label>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-historial" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-historial" class="ml-2 text-sm text-gray-700">Historial de Ventas</label>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="lock-configuracion" class="checkbox-wrapper input[type="checkbox"]">
+            <label for="lock-configuracion" class="ml-2 text-sm text-gray-700">Configuración</label>
+          </div>
+        </div>
+      </div>
+      
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4 text-red-600">Zona de peligro</h2>
         
@@ -680,6 +736,55 @@
     let currentVentaItems = [];
     let currentVentaClienteId = null;
     let currentVentaNotas = '';
+    let adminPassword = localStorage.getItem('adminPassword') || '4602';
+    localStorage.setItem('adminPassword', adminPassword);
+    let lockedSections = JSON.parse(localStorage.getItem('lockedSections')) || ['productos', 'configuracion'];
+
+    // Inicializar productos si no existen
+    if (productos.length === 0) {
+      const initialProducts = [
+        {
+          nombre: 'Salsa Soja',
+          tamanos: [
+            { nombre: '250ml', precio: 3, stock: undefined },
+            { nombre: '500ml', precio: 4, stock: undefined },
+            { nombre: '1lt', precio: 6, stock: undefined },
+            { nombre: '1lt', precio: 7, stock: undefined },
+            { nombre: '5lt', precio: 25, stock: undefined }
+          ],
+          sabores: ['Ahumado']
+        },
+        {
+          nombre: 'Vinagre Uva',
+          tamanos: [
+            { nombre: '1lt', precio: 6, stock: undefined },
+            { nombre: '1.5lt', precio: 8, stock: undefined },
+            { nombre: '5lt', precio: 25, stock: undefined }
+          ],
+          sabores: ['Uva Blanco', 'Uva Tinto']
+        },
+        {
+          nombre: 'Vinagre Manzana',
+          tamanos: [
+            { nombre: '1lt', precio: 8, stock: undefined },
+            { nombre: '1.5lt', precio: 10, stock: undefined },
+            { nombre: '5lt', precio: 35, stock: undefined }
+          ],
+          sabores: ['Manzana Verde', 'Manzana Roja']
+        },
+        {
+          nombre: 'Limonero',
+          tamanos: [
+            { nombre: '500ml', precio: 5, stock: undefined },
+            { nombre: '1lt', precio: 10, stock: undefined },
+            { nombre: '5lt', precio: 45, stock: undefined }
+          ],
+          sabores: ['Limon']
+        }
+      ];
+      productos = initialProducts;
+      localStorage.setItem('productos', JSON.stringify(productos));
+    }
 
     // Funciones auxiliares
     function showToast(message, isError = false) {
@@ -717,6 +822,11 @@
       URL.revokeObjectURL(url);
     }
 
+    function checkPassword() {
+      const input = prompt('Ingrese la contraseña para acceder:');
+      return input === adminPassword;
+    }
+
     // Navegación
     document.addEventListener('DOMContentLoaded', () => {
       const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -730,6 +840,12 @@
       navItems.forEach(item => {
         item.addEventListener('click', () => {
           const sectionId = item.getAttribute('data-section');
+          if (lockedSections.includes(sectionId)) {
+            if (!checkPassword()) {
+              showToast('Contraseña incorrecta', true);
+              return;
+            }
+          }
           sections.forEach(s => s.classList.remove('active'));
           document.getElementById(`${sectionId}-section`).classList.add('active');
           navItems.forEach(n => n.classList.remove('active'));
@@ -737,6 +853,7 @@
           mobileMenu.classList.add('hidden');
           if (sectionId === 'resumen') updateResumen();
           if (sectionId === 'historial') loadHistorial();
+          if (sectionId === 'configuracion') setupSecurityForm();
         });
       });
 
@@ -747,7 +864,31 @@
       setupClientesSection();
       setupResumenSection();
       setupConfiguracion();
+      setupLockSections();
     });
+
+    function setupLockSections() {
+      const sections = {
+        'ventas': 'lock-ventas',
+        'productos': 'lock-productos',
+        'clientes': 'lock-clientes',
+        'resumen': 'lock-resumen',
+        'historial': 'lock-historial',
+        'configuracion': 'lock-configuracion'
+      };
+      Object.entries(sections).forEach(([sec, id]) => {
+        const check = document.getElementById(id);
+        check.checked = lockedSections.includes(sec);
+        check.addEventListener('change', () => {
+          if (check.checked) {
+            if (!lockedSections.includes(sec)) lockedSections.push(sec);
+          } else {
+            lockedSections = lockedSections.filter(s => s !== sec);
+          }
+          localStorage.setItem('lockedSections', JSON.stringify(lockedSections));
+        });
+      });
+    }
 
     // Cargar Productos
     function loadProductos() {
@@ -1405,7 +1546,6 @@
 
       guardarBtn.addEventListener('click', () => {
         if (currentVentaItems.length === 0) return showToast('No hay items en la venta', true);
-        if (currentVentaClienteId === null) return showToast('Selecciona un cliente', true);
 
         const total = currentVentaItems.reduce((sum, item) => sum + item.subtotal, 0);
         const fecha = new Date().toISOString();
@@ -1528,7 +1668,7 @@
     // Generar texto de factura
     function generateInvoiceText(v) {
       const fecha = new Date(v.fecha).toLocaleString('es-ES');
-      const cliente = clientes[v.clienteId]?.nombre || 'Desconocido';
+      const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
       let itemsText = v.items.map(i => `${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x ${i.cantidad} @ ${formatCurrency(i.precio)} = ${formatCurrency(i.subtotal)}`).join('\n');
       return `Factura de Venta
 
@@ -1547,7 +1687,7 @@ Total: ${formatCurrency(v.total)}
     function generateCsvContent(filteredVentas) {
       let content = 'Fecha,Cliente,Total,Notas,Items\n';
       filteredVentas.forEach(v => {
-        const cliente = clientes[v.clienteId]?.nombre || 'Desconocido';
+        const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
         const items = v.items.map(i => `${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x${i.cantidad} @${formatCurrency(i.precio)}`).join('; ');
         content += `${v.fecha},${cliente},${v.total},${v.notas || ''},"${items}"\n`;
       });
@@ -1588,7 +1728,8 @@ Total: ${formatCurrency(v.total)}
         doc.setFontSize(12);
         doc.text(`Fecha: ${new Date(v.fecha).toLocaleString('es-ES')}`, 10, y);
         y += 7;
-        doc.text(`Cliente: ${clientes[v.clienteId]?.nombre || 'Desconocido'}`, 10, y);
+        const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
+        doc.text(`Cliente: ${cliente}`, 10, y);
         y += 7;
         doc.text(`Notas: ${v.notas || 'Ninguna'}`, 10, y);
         y += 10;
@@ -1653,21 +1794,22 @@ Total: ${formatCurrency(v.total)}
         const total = filteredVentas.reduce((sum, v) => sum + v.total, 0);
         const avg = total / filteredVentas.length;
         const topCliente = filteredVentas.reduce((acc, v) => {
-          acc[v.clienteId] = (acc[v.clienteId] || 0) + v.total;
+          const id = v.clienteId !== null ? v.clienteId : 'sin_cliente';
+          acc[id] = (acc[id] || 0) + v.total;
           return acc;
         }, {});
         const topClienteId = Object.keys(topCliente).reduce((a, b) => topCliente[a] > topCliente[b] ? a : b);
-        const topClienteName = clientes[topClienteId]?.nombre || 'Desconocido';
-        const uniqueClientes = new Set(filteredVentas.map(v => v.clienteId)).size;
+        const topClienteName = topClienteId !== 'sin_cliente' ? (clientes[topClienteId]?.nombre || 'Desconocido') : 'Sin cliente';
+        const uniqueClientes = new Set(filteredVentas.map(v => v.clienteId).filter(id => id !== null)).size;
         let totalItems = 0;
         filteredVentas.forEach(v => {
           totalItems += v.items.reduce((sum, i) => sum + i.cantidad, 0);
         });
         const productSales = {};
         filteredVentas.forEach(v => {
-          v.items.forEach(i => {
-            const key = `${i.producto} - ${i.tamano} - ${i.sabor || 'Sin sabor'}`;
-            productSales[key] = (productSales[key] || 0) + i.cantidad;
+          v.items.forEach(item => {
+            const key = `${item.producto} - ${item.tamano} - ${item.sabor || 'Sin sabor'}`;
+            productSales[key] = (productSales[key] || 0) + item.cantidad;
           });
         });
         const sortedProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
@@ -1677,7 +1819,7 @@ Total: ${formatCurrency(v.total)}
           <p><strong>Total de ventas:</strong> ${formatCurrency(total)}</p>
           <p><strong>Promedio por venta:</strong> ${formatCurrency(avg)}</p>
           <p><strong>Cliente top:</strong> ${topClienteName} (${formatCurrency(topCliente[topClienteId])})</p>
-          <p><strong>Clientes únicos:</strong> ${uniqueClientes}</p>
+          <p><strong>Clientes únicos (registrados):</strong> ${uniqueClientes}</p>
           <p><strong>Total items vendidos:</strong> ${totalItems}</p>
           <p><strong>Producto top:</strong> ${topProduct}</p>
         `;
@@ -1695,7 +1837,10 @@ Total: ${formatCurrency(v.total)}
       let filtered = ventas.filter(v => v.fecha >= desde && v.fecha <= hasta + 'T23:59:59');
 
       if (clienteSearch) {
-        filtered = filtered.filter(v => clientes[v.clienteId]?.nombre.toLowerCase().includes(clienteSearch));
+        filtered = filtered.filter(v => {
+          if (v.clienteId === null) return 'sin cliente'.includes(clienteSearch);
+          return clientes[v.clienteId]?.nombre.toLowerCase().includes(clienteSearch);
+        });
       }
 
       filtered.sort((a, b) => b.fecha.localeCompare(a.fecha));
@@ -1704,7 +1849,7 @@ Total: ${formatCurrency(v.total)}
       tbody.innerHTML = '';
 
       filtered.forEach((v, originalIndex) => {
-        const cliente = clientes[v.clienteId] ? clientes[v.clienteId].nombre : 'Desconocido';
+        const cliente = v.clienteId !== null ? (clientes[v.clienteId] ? clientes[v.clienteId].nombre : 'Desconocido') : 'Sin cliente';
         const fecha = new Date(v.fecha).toLocaleString('es-ES');
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -1737,7 +1882,7 @@ Total: ${formatCurrency(v.total)}
     function viewVenta(e) {
       const index = e.target.closest('button').dataset.index;
       const v = ventas[index];
-      const cliente = clientes[v.clienteId]?.nombre || 'Desconocido';
+      const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
       const fecha = new Date(v.fecha).toLocaleString('es-ES');
       const content = document.getElementById('view-venta-content');
       content.innerHTML = `
@@ -1778,17 +1923,44 @@ Total: ${formatCurrency(v.total)}
     // Setup Configuración
     function setupConfiguracion() {
       document.getElementById('borrar-datos-btn').addEventListener('click', () => {
+        const input = prompt('Ingrese la contraseña para borrar datos:');
+        if (input !== adminPassword) {
+          showToast('Contraseña incorrecta', true);
+          return;
+        }
         if (!confirm('¿Estás seguro de borrar todos los datos?')) return;
         localStorage.clear();
         productos = [];
         clientes = [];
         ventas = [];
+        adminPassword = '4602';
+        localStorage.setItem('adminPassword', adminPassword);
         loadProductos();
         loadClientes();
         loadHistorial();
         updateResumen();
         resetVenta();
         showToast('Todos los datos han sido borrados');
+      });
+    }
+
+    // Setup Formulario de Cambio de Contraseña
+    function setupSecurityForm() {
+      const form = document.getElementById('cambiar-contrasena-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const current = document.getElementById('current-password').value;
+        const newPass = document.getElementById('new-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+
+        if (current !== adminPassword) return showToast('Contraseña actual incorrecta', true);
+        if (newPass !== confirm) return showToast('Las nuevas contraseñas no coinciden', true);
+        if (!newPass) return showToast('Nueva contraseña requerida', true);
+
+        adminPassword = newPass;
+        localStorage.setItem('adminPassword', adminPassword);
+        form.reset();
+        showToast('Contraseña cambiada exitosamente');
       });
     }
   </script>
