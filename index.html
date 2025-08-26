@@ -253,6 +253,10 @@
           </button>
           
           <div class="flex items-center gap-3">
+            <div class="flex items-center">
+              <input type="checkbox" id="pagado-check" class="checkbox-wrapper input[type='checkbox']">
+              <label for="pagado-check" class="ml-2 text-sm text-gray-700">Pagado</label>
+            </div>
             <button id="guardar-venta-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
               <i class="fas fa-save mr-1"></i> Guardar Venta
             </button>
@@ -463,12 +467,13 @@
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
             <tbody id="ventas-tbody" class="bg-white divide-y divide-gray-200">
               <tr>
-                <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="5">No hay ventas registradas</td>
+                <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="6">No hay ventas registradas</td>
               </tr>
             </tbody>
           </table>
@@ -1450,6 +1455,7 @@
       const reiniciarBtn = document.getElementById('reiniciar-venta-btn');
       const guardarBtn = document.getElementById('guardar-venta-btn');
       const nuevoProductoBtn = document.getElementById('nuevo-producto-venta-btn');
+      const pagadoCheck = document.getElementById('pagado-check');
 
       nuevoProductoBtn.addEventListener('click', () => {
         document.getElementById('tamanos-list').innerHTML = '';
@@ -1550,6 +1556,7 @@
         const total = currentVentaItems.reduce((sum, item) => sum + item.subtotal, 0);
         const fecha = new Date().toISOString();
         currentVentaNotas = document.getElementById('notas-venta').value.trim();
+        const status = pagadoCheck.checked ? 'paid' : 'pending';
 
         currentVentaItems.forEach(item => {
           const tam = productos[item.prodIndex].tamanos[item.tamIndex];
@@ -1563,7 +1570,8 @@
           items: currentVentaItems,
           total,
           notas: currentVentaNotas,
-          fecha
+          fecha,
+          status
         });
 
         localStorage.setItem('ventas', JSON.stringify(ventas));
@@ -1629,6 +1637,7 @@
       document.getElementById('precio-input').value = '';
       document.getElementById('precio-input').disabled = true;
       document.getElementById('precio-especial-check').checked = false;
+      document.getElementById('pagado-check').checked = false;
       updateVentaTable();
     }
 
@@ -1675,6 +1684,7 @@
 Fecha: ${fecha}
 Cliente: ${cliente}
 Notas: ${v.notas || 'Ninguna'}
+Status: ${v.status === 'paid' ? 'Pagado' : 'Pendiente'}
 
 Items:
 ${itemsText}
@@ -1685,11 +1695,11 @@ Total: ${formatCurrency(v.total)}
 
     // Generar contenido CSV
     function generateCsvContent(filteredVentas) {
-      let content = 'Fecha,Cliente,Total,Notas,Items\n';
+      let content = 'Fecha,Cliente,Total,Notas,Status,Items\n';
       filteredVentas.forEach(v => {
         const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
         const items = v.items.map(i => `${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x${i.cantidad} @${formatCurrency(i.precio)}`).join('; ');
-        content += `${v.fecha},${cliente},${v.total},${v.notas || ''},"${items}"\n`;
+        content += `${v.fecha},${cliente},${v.total},${v.notas || ''},${v.status},"${items}"\n`;
       });
       return content;
     }
@@ -1732,6 +1742,8 @@ Total: ${formatCurrency(v.total)}
         doc.text(`Cliente: ${cliente}`, 10, y);
         y += 7;
         doc.text(`Notas: ${v.notas || 'Ninguna'}`, 10, y);
+        y += 7;
+        doc.text(`Status: ${v.status === 'paid' ? 'Pagado' : 'Pendiente'}`, 10, y);
         y += 10;
         doc.text('Items:', 10, y);
         y += 7;
@@ -1814,9 +1826,11 @@ Total: ${formatCurrency(v.total)}
         });
         const sortedProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
         const topProduct = sortedProducts[0] ? `${sortedProducts[0][0]} (${sortedProducts[0][1]} unidades)` : 'N/A';
+        const totalPending = filteredVentas.filter(v => v.status === 'pending').reduce((sum, v) => sum + v.total, 0);
 
         content.innerHTML = `
           <p><strong>Total de ventas:</strong> ${formatCurrency(total)}</p>
+          <p><strong>Total pendiente:</strong> ${formatCurrency(totalPending)}</p>
           <p><strong>Promedio por venta:</strong> ${formatCurrency(avg)}</p>
           <p><strong>Cliente top:</strong> ${topClienteName} (${formatCurrency(topCliente[topClienteId])})</p>
           <p><strong>Clientes únicos (registrados):</strong> ${uniqueClientes}</p>
@@ -1851,14 +1865,17 @@ Total: ${formatCurrency(v.total)}
       filtered.forEach((v, originalIndex) => {
         const cliente = v.clienteId !== null ? (clientes[v.clienteId] ? clientes[v.clienteId].nombre : 'Desconocido') : 'Sin cliente';
         const fecha = new Date(v.fecha).toLocaleString('es-ES');
+        const statusText = v.status === 'paid' ? 'Pagado' : 'Pendiente';
         const row = document.createElement('tr');
         row.innerHTML = `
           <td class="px-4 py-4 text-sm">${fecha}</td>
           <td class="px-4 py-4 text-sm">${cliente}</td>
           <td class="px-4 py-4 text-sm">${formatCurrency(v.total)}</td>
           <td class="px-4 py-4 text-sm">${v.notas || ''}</td>
+          <td class="px-4 py-4 text-sm">${statusText}</td>
           <td class="px-4 py-4 text-sm">
             <button class="view-venta text-blue-500 mr-2" data-index="${ventas.indexOf(v)}"><i class="fas fa-eye"></i></button>
+            ${v.status === 'pending' ? `<button class="mark-paid text-green-500 mr-2" data-index="${ventas.indexOf(v)}"><i class="fas fa-check"></i></button>` : ''}
             <button class="delete-venta text-red-500" data-index="${ventas.indexOf(v)}"><i class="fas fa-trash"></i></button>
           </td>
         `;
@@ -1866,11 +1883,12 @@ Total: ${formatCurrency(v.total)}
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="5">No hay ventas registradas</td></tr>';
+        tbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="6">No hay ventas registradas</td></tr>';
       }
 
       document.querySelectorAll('.view-venta').forEach(btn => btn.addEventListener('click', viewVenta));
       document.querySelectorAll('.delete-venta').forEach(btn => btn.addEventListener('click', deleteVenta));
+      document.querySelectorAll('.mark-paid').forEach(btn => btn.addEventListener('click', markPaid));
 
       // Filtros historial
       document.getElementById('historial-desde').addEventListener('change', loadHistorial);
@@ -1884,11 +1902,13 @@ Total: ${formatCurrency(v.total)}
       const v = ventas[index];
       const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
       const fecha = new Date(v.fecha).toLocaleString('es-ES');
+      const statusText = v.status === 'paid' ? 'Pagado' : 'Pendiente';
       const content = document.getElementById('view-venta-content');
       content.innerHTML = `
         <p><strong>Fecha:</strong> ${fecha}</p>
         <p><strong>Cliente:</strong> ${cliente}</p>
         <p><strong>Notas:</strong> ${v.notas || 'Ninguna'}</p>
+        <p><strong>Status:</strong> ${statusText}</p>
         <h3 class="font-medium mt-4 mb-2">Items:</h3>
         <ul class="list-disc pl-5">
           ${v.items.map(i => `<li>${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x${i.cantidad} @${formatCurrency(i.precio)} = ${formatCurrency(i.subtotal)}</li>`).join('')}
@@ -1898,6 +1918,15 @@ Total: ${formatCurrency(v.total)}
       const modal = document.getElementById('view-venta-modal');
       modal.classList.remove('hidden');
       document.getElementById('close-view-venta').addEventListener('click', () => modal.classList.add('hidden'), { once: true });
+    }
+
+    // Marcar como Pagado
+    function markPaid(e) {
+      const index = e.target.closest('button').dataset.index;
+      ventas[index].status = 'paid';
+      localStorage.setItem('ventas', JSON.stringify(ventas));
+      loadHistorial();
+      showToast('Venta marcada como pagada');
     }
 
     // Eliminar Venta
