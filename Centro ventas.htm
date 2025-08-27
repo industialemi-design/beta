@@ -1,1997 +1,815 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="utf-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>ALEMI - Sistema de Seguimiento de Ventas</title>
+
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
+
     body {
+
       font-family: 'Poppins', sans-serif;
+
       background-color: #f9fafb;
+
     }
+
     .logo {
+
       font-weight: 700;
+
       letter-spacing: 1px;
+
     }
+
     .nav-link {
+
       position: relative;
+
       transition: all 0.3s;
+
     }
+
     .nav-link::after {
+
       content: '';
+
       position: absolute;
+
       width: 0;
+
       height: 2px;
+
       bottom: -2px;
+
       left: 0;
+
       background-color: #f97316;
+
       transition: width 0.3s;
+
     }
+
     .nav-link:hover::after, .nav-link.active::after {
+
       width: 100%;
+
     }
+
     .section {
+
       display: none;
+
       animation: fadeIn 0.5s;
+
     }
+
     .section.active {
+
       display: block;
+
     }
+
     @keyframes fadeIn {
+
       from { opacity: 0; }
+
       to { opacity: 1; }
+
     }
+
     .card {
+
       transition: transform 0.3s, box-shadow 0.3s;
+
     }
+
     .card:hover {
+
       transform: translateY(-5px);
+
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+
     }
+
     .btn-primary {
+
       background-color: #f97316;
+
       transition: all 0.3s;
+
     }
+
     .btn-primary:hover {
+
       background-color: #ea580c;
+
       transform: translateY(-2px);
+
     }
+
     .btn-secondary {
+
       background-color: #334155;
+
       transition: all 0.3s;
+
     }
+
     .btn-secondary:hover {
+
       background-color: #1e293b;
+
     }
+
     .btn-danger {
+
       background-color: #ef4444;
+
       transition: all 0.3s;
+
     }
+
     .btn-danger:hover {
+
       background-color: #dc2626;
+
     }
+
     .checkbox-wrapper input[type="checkbox"] {
+
       accent-color: #f97316;
+
     }
+
     .spinner {
+
       animation: spin 1s linear infinite;
+
     }
+
     @keyframes spin {
+
       to { transform: rotate(360deg); }
+
     }
+
     .toast {
+
       position: fixed;
+
       top: 20px;
+
       right: 20px;
+
       padding: 12px 24px;
+
       background-color: #22c55e;
+
       color: white;
+
       border-radius: 4px;
+
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
       z-index: 50;
+
       opacity: 0;
+
       transition: opacity 0.3s;
+
     }
+
     .toast.show {
+
       opacity: 1;
+
     }
+
     .toast.error {
+
       background-color: #ef4444;
+
     }
+
   </style>
+
 </head>
+
 <body class="min-h-screen">
+
   <!-- Navbar -->
+
   <nav class="bg-white shadow-md fixed top-0 left-0 w-full z-10">
+
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+
       <div class="flex items-center space-x-2">
+
         <span class="logo text-2xl text-orange-500">ALEMI</span>
+
       </div>
+
       <div class="hidden md:flex space-x-6">
+
         <a href="javascript:void(0)" class="nav-link nav-item active" data-section="ventas">Ventas</a>
+
         <a href="javascript:void(0)" class="nav-link nav-item" data-section="productos">Productos</a>
+
         <a href="javascript:void(0)" class="nav-link nav-item" data-section="clientes">Clientes</a>
+
         <a href="javascript:void(0)" class="nav-link nav-item" data-section="resumen">Resumen & Análisis</a>
+
         <a href="javascript:void(0)" class="nav-link nav-item" data-section="historial">Historial de Ventas</a>
+
         <a href="javascript:void(0)" class="nav-link nav-item" data-section="configuracion">Configuración</a>
+
       </div>
+
       <div class="md:hidden">
+
         <button id="mobile-menu-button" class="text-gray-700">
+
           <i class="fas fa-bars text-xl"></i>
+
         </button>
+
       </div>
+
     </div>
+
     <div id="mobile-menu" class="hidden md:hidden bg-white w-full pb-4 shadow-md">
+
       <div class="container mx-auto px-4 flex flex-col space-y-3">
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="ventas">Ventas</a>
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="productos">Productos</a>
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="clientes">Clientes</a>
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="resumen">Resumen & Análisis</a>
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="historial">Historial de Ventas</a>
+
         <a href="javascript:void(0)" class="nav-item block py-2 hover:text-orange-500" data-section="configuracion">Configuración</a>
+
       </div>
+
     </div>
+
   </nav>
 
+
+
   <!-- Main Content -->
+
   <main class="container mx-auto px-4 pt-24 pb-12">
+
     <!-- Ventas Section -->
+
     <section id="ventas-section" class="section active">
+
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Registro de Ventas</h1>
+
       
+
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Nueva Venta</h2>
+
         
+
         <form id="nueva-venta-form" class="space-y-4">
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-box mr-1"></i>Producto</label>
+
               <select id="producto-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+
                 <option value="">Seleccionar producto...</option>
+
               </select>
+
               <button type="button" id="nuevo-producto-venta-btn" class="mt-1 text-sm text-orange-500 hover:underline">
+
                 <i class="fas fa-plus mr-1"></i> Nuevo producto
+
               </button>
+
             </div>
+
             
+
             <div>
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-ruler mr-1"></i>Tamaño</label>
+
               <select id="tamano-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled>
+
                 <option value="">Seleccionar tamaño...</option>
+
               </select>
+
             </div>
+
             
+
             <div>
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-ice-cream mr-1"></i>Sabor (opcional)</label>
+
               <select id="sabor-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled>
+
                 <option value="">Seleccionar sabor...</option>
+
               </select>
+
             </div>
+
             
+
             <div>
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-hashtag mr-1"></i>Cantidad</label>
+
               <input type="number" id="cantidad-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" min="1" value="1">
+
             </div>
+
             
+
             <div>
+
               <div class="flex items-center mb-1">
+
                 <label class="block text-sm font-medium text-gray-700"><i class="fas fa-dollar-sign mr-1"></i>Precio</label>
+
                 <div class="ml-2">
+
                   <input type="checkbox" id="precio-especial-check" class="form-checkbox">
+
                   <label for="precio-especial-check" class="text-sm text-gray-600 ml-1">Usar precio especial</label>
+
                 </div>
+
               </div>
+
               <input type="number" id="precio-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled step="0.01">
+
             </div>
+
             
+
             <div>
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-user mr-1"></i>Cliente (opcional)</label>
+
               <div class="relative">
+
                 <input type="text" id="cliente-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Buscar cliente...">
+
                 <input type="hidden" id="cliente-id">
+
                 <div id="clientes-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-40 overflow-y-auto hidden">
+
                 </div>
+
               </div>
+
               <button type="button" id="nuevo-cliente-btn" class="mt-1 text-sm text-orange-500 hover:underline">
+
                 <i class="fas fa-plus mr-1"></i> Nuevo cliente
+
               </button>
+
             </div>
+
             
+
             <div class="md:col-span-2">
+
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-note-sticky mr-1"></i>Notas adicionales</label>
+
               <textarea id="notas-venta" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" rows="2"></textarea>
+
             </div>
+
           </div>
+
           
+
           <div class="flex justify-end">
+
             <button type="submit" id="agregar-item-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
+
               <i class="fas fa-plus mr-1"></i> Agregar a venta
+
             </button>
+
           </div>
+
         </form>
+
       </div>
+
       
+
       <div class="bg-white rounded-lg shadow-md p-6">
+
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Items en esta venta</h2>
+
         
+
         <div class="overflow-x-auto">
+
           <table class="w-full min-w-full divide-y divide-gray-200">
+
             <thead class="bg-gray-50">
+
               <tr>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sabor</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+
               </tr>
+
             </thead>
+
             <tbody id="items-venta-tbody" class="bg-white divide-y divide-gray-200">
+
               <tr>
+
                 <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="7">No hay items en la venta actual</td>
+
               </tr>
+
             </tbody>
+
             <tfoot>
+
               <tr>
+
                 <td colspan="5" class="px-4 py-4 text-right font-medium">Total:</td>
+
                 <td id="total-venta" class="px-4 py-4 font-bold">Bs 0.00</td>
+
                 <td></td>
+
               </tr>
+
             </tfoot>
+
           </table>
+
         </div>
+
         
+
         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+
           <button id="reiniciar-venta-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
+
             <i class="fas fa-undo mr-1"></i> Reiniciar venta
+
           </button>
+
           
+
           <div class="flex items-center gap-3">
+
             <div class="flex items-center">
+
               <input type="checkbox" id="pagado-check" class="checkbox-wrapper input[type='checkbox']">
+
               <label for="pagado-check" class="ml-2 text-sm text-gray-700">Pagado</label>
+
             </div>
+
             <button id="guardar-venta-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
+
               <i class="fas fa-save mr-1"></i> Guardar Venta
+
             </button>
+
           </div>
+
         </div>
+
       </div>
+
     </section>
+
     
+
     <!-- Productos Section -->
+
     <section id="productos-section" class="section">
+
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Productos</h1>
+
       
+
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+
           <h2 class="text-xl font-semibold text-gray-700">Lista de Productos</h2>
+
           <div class="flex gap-4">
+
             <button id="nuevo-producto-btn" class="btn-primary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-plus mr-1"></i> Nuevo Producto
+
             </button>
+
             <button id="importar-productos-btn" class="btn-secondary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-file-import mr-1"></i> Importar
+
             </button>
+
             <button id="exportar-productos-btn" class="btn-secondary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-file-export mr-1"></i> Exportar
+
             </button>
+
           </div>
+
         </div>
+
         
+
         <div class="mb-4">
+
           <input type="text" id="buscar-producto" placeholder="Buscar producto..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+
         </div>
+
         
+
         <div class="overflow-x-auto">
+
           <table class="w-full min-w-full divide-y divide-gray-200">
+
             <thead class="bg-gray-50">
+
               <tr>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaños, Precios y Stock</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sabores</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+
               </tr>
+
             </thead>
+
             <tbody id="productos-tbody" class="bg-white divide-y divide-gray-200">
+
               <tr>
+
                 <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="4">No hay productos registrados</td>
+
               </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
       </div>
+
     </section>
+
     
+
     <!-- Clientes Section -->
+
     <section id="clientes-section" class="section">
+
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Clientes</h1>
+
       
+
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+
           <h2 class="text-xl font-semibold text-gray-700">Lista de Clientes</h2>
+
           <div class="flex gap-4">
+
             <button id="nuevo-cliente-form-btn" class="btn-primary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-plus mr-1"></i> Nuevo Cliente
+
             </button>
+
             <button id="importar-clientes-btn" class="btn-secondary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-file-import mr-1"></i> Importar
+
             </button>
+
             <button id="exportar-clientes-btn" class="btn-secondary text-white font-medium py-2 px-4 rounded-md">
+
               <i class="fas fa-file-export mr-1"></i> Exportar
+
             </button>
+
           </div>
+
         </div>
+
         
+
         <div class="mb-4">
+
           <input type="text" id="buscar-cliente" placeholder="Buscar cliente..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+
         </div>
+
         
+
         <div class="overflow-x-auto">
+
           <table class="w-full min-w-full divide-y divide-gray-200">
+
             <thead class="bg-gray-50">
+
               <tr>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubicación</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
+
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+
               </tr>
+
             </thead>
+
             <tbody id="clientes-tbody" class="bg-white divide-y divide-gray-200">
+
               <tr>
+
                 <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="5">No hay clientes registrados</td>
+
               </tr>
+
             </tbody>
+
           </table>
+
         </div>
+
       </div>
+
     </section>
+
     
+
     <!-- Resumen Section -->
+
     <section id="resumen-section" class="section">
+
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Resumen y Análisis</h1>
+
       
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
         <div class="bg-white rounded-lg shadow-md p-6">
+
           <div class="flex items-center justify-between">
+
             <h2 class="text-lg font-semibold text-gray-700">Ventas de hoy</h2>
+
             <span class="text-orange-500">
+
               <i class="fas fa-chart-line text-xl"></i>
+
             </span>
+
           </div>
+
           <p class="text-3xl font-bold text-gray-800 mt-2" id="ventas-hoy-total">Bs 0.00</p>
+
           <p class="text-sm text-gray-500 mt-1" id="ventas-hoy-cantidad">0 ventas</p>
+
         </div>
+
         
+
         <div class="bg-white rounded-lg shadow-md p-6">
+
           <div class="flex items-center justify-between">
+
             <h2 class="text-lg font-semibold text-gray-700">Ventas del mes</h2>
+
             <span class="text-orange-500">
+
               <i class="fas fa-calendar-alt text-xl"></i>
+
             </span>
+
           </div>
+
           <p class="text-3xl font-bold text-gray-800 mt-2" id="ventas-mes-total">Bs 0.00</p>
+
           <p class="text-sm text-gray-500 mt-1" id="ventas-mes-cantidad">0 ventas</p>
+
         </div>
+
         
+
         <div class="bg-white rounded-lg shadow-md p-6">
+
           <div class="flex items-center justify-between">
+
             <h2 class="text-lg font-semibold text-gray-700">Clientes totales</h2>
+
             <span class="text-orange-500">
+
               <i class="fas fa-users text-xl"></i>
+
             </span>
+
           </div>
+
           <p class="text-3xl font-bold text-gray-800 mt-2" id="clientes-total">0</p>
+
           <p class="text-sm text-gray-500 mt-1">clientes registrados</p>
+
         </div>
+
       </div>
+
       
+
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Exportar datos de ventas</h2>
+
         
+
         <div class="mb-4">
+
           <label class="block text-sm font-medium text-gray-700 mb-1">Rango de fechas</label>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
+
               <label class="block text-xs text-gray-500 mb-1">Desde</label>
+
               <input type="date" id="fecha-desde" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+
             </div>
+
             <div>
+
               <label class="block text-xs text-gray-500 mb-1">Hasta</label>
-              <input type="date" id="fecha-hasta" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex flex-col md:flex-row gap-4">
-          <button id="previsualizar-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-eye mr-1"></i> Previsualizar
-          </button>
-          <button id="exportar-txt-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-file-alt mr-1"></i> Exportar a TXT
-          </button>
-          <button id="exportar-csv-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-file-csv mr-1"></i> Exportar a CSV
-          </button>
-          <button id="exportar-pdf-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-file-pdf mr-1"></i> Exportar a PDF
-          </button>
-          <button id="generar-analisis-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-chart-bar mr-1"></i> Generar Análisis
-          </button>
-        </div>
-      </div>
-      
-      <div id="analisis-container" class="bg-white rounded-lg shadow-md p-6 hidden">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Análisis de Ventas</h2>
-        <div id="analisis-content" class="prose prose-orange max-w-none">
-          <!-- El análisis generado por IA se mostrará aquí -->
-        </div>
-      </div>
-    </section>
-    
-    <!-- Historial Section -->
-    <section id="historial-section" class="section">
-      <h1 class="text-3xl font-bold mb-6 text-gray-800">Historial de Ventas</h1>
-      
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Lista de Ventas</h2>
-        
-        <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-            <input type="date" id="historial-desde" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-            <input type="date" id="historial-hasta" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-            <input type="text" id="historial-cliente" placeholder="Buscar cliente..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-          </div>
-        </div>
-        
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="ventas-tbody" class="bg-white divide-y divide-gray-200">
-              <tr>
-                <td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="6">No hay ventas registradas</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-    
-    <!-- Configuración Section -->
-    <section id="configuracion-section" class="section">
-      <h1 class="text-3xl font-bold mb-6 text-gray-800">Configuración</h1>
-      
-      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Seguridad</h2>
-        
-        <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
-          <form id="cambiar-contrasena-form" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña actual</label>
-              <input type="password" id="current-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
-              <input type="password" id="new-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar nueva contraseña</label>
-              <input type="password" id="confirm-password" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-            <div class="flex justify-end">
-              <button type="submit" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
-                <i class="fas fa-lock mr-1"></i> Cambiar Contraseña
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      
-      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Bloqueo de Secciones</h2>
-        <div class="space-y-2">
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-ventas" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-ventas" class="ml-2 text-sm text-gray-700">Ventas</label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-productos" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-productos" class="ml-2 text-sm text-gray-700">Productos</label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-clientes" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-clientes" class="ml-2 text-sm text-gray-700">Clientes</label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-resumen" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-resumen" class="ml-2 text-sm text-gray-700">Resumen & Análisis</label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-historial" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-historial" class="ml-2 text-sm text-gray-700">Historial de Ventas</label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="lock-configuracion" class="checkbox-wrapper input[type="checkbox"]">
-            <label for="lock-configuracion" class="ml-2 text-sm text-gray-700">Configuración</label>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4 text-red-600">Zona de peligro</h2>
-        
-        <div class="border border-red-300 rounded-lg p-4 bg-red-50">
-          <h3 class="font-medium text-red-700 mb-2">Borrar todos los datos</h3>
-          <p class="text-sm text-red-600 mb-4">Esta acción eliminará permanentemente todas las ventas, productos y clientes. No se puede deshacer.</p>
-          
-          <button id="borrar-datos-btn" class="btn-danger text-white font-medium py-2 px-6 rounded-md">
-            <i class="fas fa-trash mr-1"></i> Borrar todos los datos
-          </button>
-        </div>
-      </div>
-    </section>
-  </main>
 
-  <!-- Modals -->
-  <!-- Modal para Nuevo Producto -->
-  <div id="nuevo-producto-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Nuevo Producto</h2>
-      <form id="nuevo-producto-form">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input type="text" id="producto-nombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div id="tamanos-container" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tamaños</label>
-          <div id="tamanos-list"></div>
-          <button type="button" id="add-tamano" class="text-orange-500 hover:underline"><i class="fas fa-plus mr-1"></i> Agregar tamaño</button>
-        </div>
-        <div id="sabores-container" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Sabores (opcional)</label>
-          <div id="sabores-list"></div>
-          <button type="button" id="add-sabor" class="text-orange-500 hover:underline"><i class="fas fa-plus mr-1"></i> Agregar sabor</button>
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-nuevo-producto" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Editar Producto -->
-  <div id="editar-producto-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Editar Producto</h2>
-      <form id="editar-producto-form">
-        <input type="hidden" id="editar-producto-id">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input type="text" id="editar-producto-nombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div id="edit-tamanos-container" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tamaños</label>
-          <div id="edit-tamanos-list"></div>
-          <button type="button" id="edit-add-tamano" class="text-orange-500 hover:underline"><i class="fas fa-plus mr-1"></i> Agregar tamaño</button>
-        </div>
-        <div id="edit-sabores-container" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Sabores (opcional)</label>
-          <div id="edit-sabores-list"></div>
-          <button type="button" id="edit-add-sabor" class="text-orange-500 hover:underline"><i class="fas fa-plus mr-1"></i> Agregar sabor</button>
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-editar-producto" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Actualizar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Importar Productos -->
-  <div id="importar-productos-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Importar Productos</h2>
-      <form id="importar-productos-form">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Subir archivo (CSV, TXT o XLSX)</label>
-          <input type="file" id="importar-productos-file" accept=".csv,.txt,.xlsx" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-importar-productos" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Importar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Nuevo Cliente -->
-  <div id="nuevo-cliente-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Nuevo Cliente</h2>
-      <form id="nuevo-cliente-form">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input type="text" id="cliente-nombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-          <input type="text" id="cliente-telefono" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
-          <input type="text" id="cliente-ubicacion" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
-          <textarea id="cliente-notas" class="w-full border border-gray-300 rounded-md px-3 py-2" rows="2"></textarea>
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-nuevo-cliente" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Editar Cliente -->
-  <div id="editar-cliente-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Editar Cliente</h2>
-      <form id="editar-cliente-form">
-        <input type="hidden" id="editar-cliente-id">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input type="text" id="editar-cliente-nombre" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-          <input type="text" id="editar-cliente-telefono" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
-          <input type="text" id="editar-cliente-ubicacion" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
-          <textarea id="editar-cliente-notas" class="w-full border border-gray-300 rounded-md px-3 py-2" rows="2"></textarea>
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-editar-cliente" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Actualizar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Importar Clientes -->
-  <div id="importar-clientes-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-lg font-semibold mb-4">Importar Clientes</h2>
-      <form id="importar-clientes-form">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Subir archivo (CSV, TXT o XLSX)</label>
-          <input type="file" id="importar-clientes-file" accept=".csv,.txt,.xlsx" class="w-full border border-gray-300 rounded-md px-3 py-2">
-        </div>
-        <div class="flex justify-end gap-4">
-          <button type="button" id="cancel-importar-clientes" class="btn-secondary text-white py-2 px-4 rounded-md">Cancelar</button>
-          <button type="submit" class="btn-primary text-white py-2 px-4 rounded-md">Importar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para Ver Venta -->
-  <div id="view-venta-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-lg">
-      <h2 class="text-lg font-semibold mb-4">Detalles de Venta</h2>
-      <div id="view-venta-content"></div>
-      <div class="flex justify-end mt-4">
-        <button id="close-view-venta" class="btn-secondary text-white py-2 px-4 rounded-md">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Previsualización de Export -->
-  <div id="export-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg p-6 w-full max-w-4xl overflow-auto">
-      <h2 class="text-lg font-semibold mb-4">Previsualización de Exportación</h2>
-      <div id="preview-content" class="bg-gray-50 p-4 rounded-md mb-4 whitespace-pre-wrap"></div>
-      <div class="flex justify-end gap-4">
-        <button id="download-txt" class="btn-secondary text-white py-2 px-4 rounded-md">Descargar TXT</button>
-        <button id="download-csv" class="btn-secondary text-white py-2 px-4 rounded-md">Descargar CSV</button>
-        <button id="download-pdf" class="btn-secondary text-white py-2 px-4 rounded-md">Descargar PDF</button>
-        <button id="close-preview" class="btn-danger text-white py-2 px-4 rounded-md">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
-  <script>
-    // Datos almacenados en localStorage
-    let productos = JSON.parse(localStorage.getItem('productos')) || [];
-    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-    let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
-    let currentVentaItems = [];
-    let currentVentaClienteId = null;
-    let currentVentaNotas = '';
-    let adminPassword = localStorage.getItem('adminPassword') || '4602';
-    localStorage.setItem('adminPassword', adminPassword);
-    let lockedSections = JSON.parse(localStorage.getItem('lockedSections')) || ['productos', 'configuracion'];
-
-    // Inicializar productos si no existen
-    if (productos.length === 0) {
-      const initialProducts = [
-        {
-          nombre: 'Salsa Soja',
-          tamanos: [
-            { nombre: '250ml', precio: 3, stock: undefined },
-            { nombre: '500ml', precio: 4, stock: undefined },
-            { nombre: '1lt', precio: 6, stock: undefined },
-            { nombre: '1lt', precio: 7, stock: undefined },
-            { nombre: '5lt', precio: 25, stock: undefined }
-          ],
-          sabores: ['Ahumado']
-        },
-        {
-          nombre: 'Vinagre Uva',
-          tamanos: [
-            { nombre: '1lt', precio: 6, stock: undefined },
-            { nombre: '1.5lt', precio: 8, stock: undefined },
-            { nombre: '5lt', precio: 25, stock: undefined }
-          ],
-          sabores: ['Uva Blanco', 'Uva Tinto']
-        },
-        {
-          nombre: 'Vinagre Manzana',
-          tamanos: [
-            { nombre: '1lt', precio: 8, stock: undefined },
-            { nombre: '1.5lt', precio: 10, stock: undefined },
-            { nombre: '5lt', precio: 35, stock: undefined }
-          ],
-          sabores: ['Manzana Verde', 'Manzana Roja']
-        },
-        {
-          nombre: 'Limonero',
-          tamanos: [
-            { nombre: '500ml', precio: 5, stock: undefined },
-            { nombre: '1lt', precio: 10, stock: undefined },
-            { nombre: '5lt', precio: 45, stock: undefined }
-          ],
-          sabores: ['Limon']
-        }
-      ];
-      productos = initialProducts;
-      localStorage.setItem('productos', JSON.stringify(productos));
-    }
-
-    // Funciones auxiliares
-    function showToast(message, isError = false) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      if (isError) toast.classList.add('error');
-      setTimeout(() => {
-        toast.classList.remove('show');
-        toast.classList.remove('error');
-      }, 3000);
-    }
-
-    function formatCurrency(amount) {
-      return `Bs ${parseFloat(amount).toFixed(2)}`;
-    }
-
-    function getToday() {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    }
-
-    function getMonthStart() {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
-    }
-
-    function downloadFile(content, filename, type) {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function checkPassword() {
-      const input = prompt('Ingrese la contraseña para acceder:');
-      return input === adminPassword;
-    }
-
-    // Navegación
-    document.addEventListener('DOMContentLoaded', () => {
-      const mobileMenuButton = document.getElementById('mobile-menu-button');
-      const mobileMenu = document.getElementById('mobile-menu');
-      mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-      });
-
-      const navItems = document.querySelectorAll('.nav-item');
-      const sections = document.querySelectorAll('.section');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const sectionId = item.getAttribute('data-section');
-          if (lockedSections.includes(sectionId)) {
-            if (!checkPassword()) {
-              showToast('Contraseña incorrecta', true);
-              return;
-            }
-          }
-          sections.forEach(s => s.classList.remove('active'));
-          document.getElementById(`${sectionId}-section`).classList.add('active');
-          navItems.forEach(n => n.classList.remove('active'));
-          item.classList.add('active');
-          mobileMenu.classList.add('hidden');
-          if (sectionId === 'resumen') updateResumen();
-          if (sectionId === 'historial') loadHistorial();
-          if (sectionId === 'configuracion') setupSecurityForm();
-        });
-      });
-
-      loadProductos();
-      loadClientes();
-      setupVentasForm();
-      setupProductosSection();
-      setupClientesSection();
-      setupResumenSection();
-      setupConfiguracion();
-      setupLockSections();
-    });
-
-    function setupLockSections() {
-      const sections = {
-        'ventas': 'lock-ventas',
-        'productos': 'lock-productos',
-        'clientes': 'lock-clientes',
-        'resumen': 'lock-resumen',
-        'historial': 'lock-historial',
-        'configuracion': 'lock-configuracion'
-      };
-      Object.entries(sections).forEach(([sec, id]) => {
-        const check = document.getElementById(id);
-        check.checked = lockedSections.includes(sec);
-        check.addEventListener('change', () => {
-          if (check.checked) {
-            if (!lockedSections.includes(sec)) lockedSections.push(sec);
-          } else {
-            lockedSections = lockedSections.filter(s => s !== sec);
-          }
-          localStorage.setItem('lockedSections', JSON.stringify(lockedSections));
-        });
-      });
-    }
-
-    // Cargar Productos
-    function loadProductos() {
-      const productoSelect = document.getElementById('producto-select');
-      const productosTbody = document.getElementById('productos-tbody');
-      productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
-      productosTbody.innerHTML = '';
-
-      productos.forEach((prod, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = prod.nombre;
-        productoSelect.appendChild(option);
-
-        const row = document.createElement('tr');
-        const tamanosStr = prod.tamanos.map(t => `${t.nombre}: ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`).join(', ');
-        row.innerHTML = `
-          <td class="px-4 py-4 text-sm">${prod.nombre}</td>
-          <td class="px-4 py-4 text-sm">${tamanosStr}</td>
-          <td class="px-4 py-4 text-sm">${prod.sabores.join(', ')}</td>
-          <td class="px-4 py-4 text-sm">
-            <button class="edit-producto text-blue-500 mr-2" data-index="${index}"><i class="fas fa-edit"></i></button>
-            <button class="delete-producto text-red-500" data-index="${index}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
-        productosTbody.appendChild(row);
-      });
-
-      if (productos.length === 0) {
-        productosTbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="4">No hay productos registrados</td></tr>';
-      }
-
-      document.querySelectorAll('.edit-producto').forEach(btn => btn.addEventListener('click', editProducto));
-      document.querySelectorAll('.delete-producto').forEach(btn => btn.addEventListener('click', deleteProducto));
-    }
-
-    // Funciones para agregar campos dinámicos
-    function addTamano(listId, nombre = '', precio = '', stock = '') {
-      const container = document.getElementById(listId);
-      const div = document.createElement('div');
-      div.classList.add('flex', 'gap-2', 'mb-2');
-      div.innerHTML = `
-        <input type="text" placeholder="Nombre" value="${nombre}" class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <input type="number" placeholder="Precio" value="${precio}" step="0.01" class="w-24 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <input type="number" placeholder="Stock (opc)" value="${stock}" class="w-24 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <button type="button" class="remove-item text-red-500"><i class="fas fa-minus"></i></button>
-      `;
-      div.querySelector('.remove-item').addEventListener('click', () => div.remove());
-      container.appendChild(div);
-    }
-
-    function addSabor(listId, sabor = '') {
-      const container = document.getElementById(listId);
-      const div = document.createElement('div');
-      div.classList.add('flex', 'gap-2', 'mb-2');
-      div.innerHTML = `
-        <input type="text" placeholder="Sabor" value="${sabor}" class="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        <button type="button" class="remove-item text-red-500"><i class="fas fa-minus"></i></button>
-      `;
-      div.querySelector('.remove-item').addEventListener('click', () => div.remove());
-      container.appendChild(div);
-    }
-
-    // Setup Productos Section
-    function setupProductosSection() {
-      const nuevoBtn = document.getElementById('nuevo-producto-btn');
-      const importarBtn = document.getElementById('importar-productos-btn');
-      const exportarBtn = document.getElementById('exportar-productos-btn');
-      const modal = document.getElementById('nuevo-producto-modal');
-      const form = document.getElementById('nuevo-producto-form');
-      const cancelBtn = document.getElementById('cancel-nuevo-producto');
-      const importarModal = document.getElementById('importar-productos-modal');
-      const importarForm = document.getElementById('importar-productos-form');
-      const cancelImportarBtn = document.getElementById('cancel-importar-productos');
-
-      nuevoBtn.addEventListener('click', () => {
-        document.getElementById('tamanos-list').innerHTML = '';
-        document.getElementById('sabores-list').innerHTML = '';
-        modal.classList.remove('hidden');
-      });
-      importarBtn.addEventListener('click', () => importarModal.classList.remove('hidden'));
-      exportarBtn.addEventListener('click', () => exportProductos('csv'));
-      cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-      cancelImportarBtn.addEventListener('click', () => importarModal.classList.add('hidden'));
-
-      document.getElementById('add-tamano').addEventListener('click', () => addTamano('tamanos-list'));
-      document.getElementById('add-sabor').addEventListener('click', () => addSabor('sabores-list'));
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('producto-nombre').value.trim();
-        const tamanosDivs = document.querySelectorAll('#tamanos-list > div');
-        const saboresDivs = document.querySelectorAll('#sabores-list > div');
-
-        if (!nombre || tamanosDivs.length === 0) return showToast('Nombre y al menos un tamaño son requeridos', true);
-
-        const tamanos = Array.from(tamanosDivs).map(div => {
-          const inputs = div.querySelectorAll('input');
-          const nom = inputs[0].value.trim();
-          const pre = parseFloat(inputs[1].value);
-          const stk = inputs[2].value ? parseInt(inputs[2].value) : undefined;
-          return { nombre: nom, precio: pre, stock: stk };
-        }).filter(t => t.nombre && !isNaN(t.precio));
-
-        const sabores = Array.from(saboresDivs).map(div => div.querySelector('input').value.trim()).filter(s => s);
-
-        if (tamanos.length === 0) return showToast('Agrega al menos un tamaño válido', true);
-
-        productos.push({ nombre, tamanos, sabores });
-        localStorage.setItem('productos', JSON.stringify(productos));
-        loadProductos();
-        modal.classList.add('hidden');
-        form.reset();
-        showToast('Producto agregado');
-        if (document.getElementById('ventas-section').classList.contains('active')) {
-          const productoSelect = document.getElementById('producto-select');
-          productoSelect.value = productos.length - 1;
-          productoSelect.dispatchEvent(new Event('change'));
-        }
-      });
-
-      importarForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        importProductos();
-        importarModal.classList.add('hidden');
-      });
-
-      document.getElementById('buscar-producto').addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#productos-tbody tr');
-        rows.forEach(row => {
-          const nombre = row.querySelector('td:first-child').textContent.toLowerCase();
-          row.style.display = nombre.includes(search) ? '' : 'none';
-        });
-      });
-    }
-
-    // Exportar Productos
-    function exportProductos(format) {
-      if (productos.length === 0) return showToast('No hay productos para exportar', true);
-
-      let content = '';
-      if (format === 'csv') {
-        content = 'Nombre,Tamaños,Sabores\n';
-        productos.forEach(p => {
-          const tamanos = p.tamanos.map(t => `${t.nombre}:${t.precio}:${t.stock !== undefined ? t.stock : ''}`).join(';');
-          const sabores = p.sabores.join(';');
-          content += `${p.nombre},${tamanos},${sabores}\n`;
-        });
-      } else {
-        content = 'Productos:\n\n';
-        productos.forEach(p => {
-          content += `Nombre: ${p.nombre}\nTamaños: ${p.tamanos.map(t => `${t.nombre}: ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`).join(', ')}\nSabores: ${p.sabores.join(', ')}\n\n`;
-        });
-      }
-
-      downloadFile(content, `productos.${format}`, `text/${format}`);
-      showToast('Productos exportados');
-    }
-
-    // Importar Productos
-    function importProductos() {
-      const fileInput = document.getElementById('importar-productos-file');
-      const file = fileInput.files[0];
-      if (!file) return showToast('Selecciona un archivo', true);
-
-      const reader = new FileReader();
-      if (file.name.endsWith('.xlsx')) {
-        reader.onload = (e) => {
-          const data = e.target.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const json = XLSX.utils.sheet_to_json(sheet);
-          let newProductos = json.map(row => {
-            const nombre = row.Nombre;
-            const tamanosStr = row.Tamaños || row.Tamanos;
-            const saboresStr = row.Sabores;
-            const tamanos = tamanosStr ? tamanosStr.split(';').map(t => {
-              const parts = t.trim().split(':');
-              const nom = parts[0]?.trim();
-              const pre = parseFloat(parts[1]?.trim());
-              const stock = parts[2] ? parseInt(parts[2].trim()) : undefined;
-              return { nombre: nom, precio: pre, stock };
-            }).filter(t => t.nombre && !isNaN(t.precio)) : [];
-            const sabores = saboresStr ? saboresStr.split(';').map(s => s.trim()).filter(s => s) : [];
-            return { nombre, tamanos, sabores };
-          }).filter(p => p.nombre && p.tamanos.length > 0);
-          if (newProductos.length === 0) return showToast('Formato de archivo inválido', true);
-          productos = [...productos, ...newProductos];
-          localStorage.setItem('productos', JSON.stringify(productos));
-          loadProductos();
-          showToast('Productos importados');
-        };
-        reader.readAsBinaryString(file);
-      } else {
-        reader.onload = (e) => {
-          const text = e.target.result;
-          let newProductos = [];
-          if (file.name.endsWith('.csv')) {
-            const lines = text.split('\n').slice(1).filter(line => line.trim());
-            newProductos = lines.map(line => {
-              const [nombre, tamanosStr, saboresStr] = line.split(',').map(s => s.trim());
-              const tamanos = tamanosStr.split(';').map(t => {
-                const parts = t.split(':');
-                const nom = parts[0]?.trim();
-                const pre = parseFloat(parts[1]?.trim());
-                const stock = parts[2] ? parseInt(parts[2].trim()) : undefined;
-                return { nombre: nom, precio: pre, stock };
-              }).filter(t => t.nombre && !isNaN(t.precio));
-              const sabores = saboresStr ? saboresStr.split(';').filter(s => s.trim()) : [];
-              return { nombre, tamanos, sabores };
-            });
-          } else {
-            const sections = text.split('\n\n').filter(s => s.trim());
-            newProductos = sections.map(section => {
-              const lines = section.split('\n').filter(l => l.trim());
-              const nombre = lines.find(l => l.startsWith('Nombre:'))?.split(':')[1]?.trim() || '';
-              const tamanosStr = lines.find(l => l.startsWith('Tamaños:'))?.split(':').slice(1).join(':').trim() || '';
-              const saboresStr = lines.find(l => l.startsWith('Sabores:'))?.split(':')[1]?.trim() || '';
-              const tamanos = tamanosStr.split(',').map(str => {
-                const match = str.match(/^(.*?):\s*Bs\s*([\d.]+)(?:\s*\(Stock:\s*(\d+)\))?$/);
-                if (match) {
-                  return {
-                    nombre: match[1].trim(),
-                    precio: parseFloat(match[2]),
-                    stock: match[3] ? parseInt(match[3]) : undefined
-                  };
-                }
-                return null;
-              }).filter(t => t && !isNaN(t.precio));
-              const sabores = saboresStr ? saboresStr.split(',').map(s => s.trim()).filter(s => s) : [];
-              return { nombre, tamanos, sabores };
-            });
-          }
-
-          newProductos = newProductos.filter(p => p.nombre && p.tamanos.length > 0);
-          if (newProductos.length === 0) return showToast('Formato de archivo inválido', true);
-
-          productos = [...productos, ...newProductos];
-          localStorage.setItem('productos', JSON.stringify(productos));
-          loadProductos();
-          showToast('Productos importados');
-        };
-        reader.readAsText(file);
-      }
-    }
-
-    // Editar Producto
-    function editProducto(e) {
-      const index = e.target.closest('button').dataset.index;
-      const prod = productos[index];
-      const modal = document.getElementById('editar-producto-modal');
-      const form = document.getElementById('editar-producto-form');
-      const cancelBtn = document.getElementById('cancel-editar-producto');
-      const tamanosList = document.getElementById('edit-tamanos-list');
-      const saboresList = document.getElementById('edit-sabores-list');
-
-      document.getElementById('editar-producto-id').value = index;
-      document.getElementById('editar-producto-nombre').value = prod.nombre;
-      tamanosList.innerHTML = '';
-      saboresList.innerHTML = '';
-      prod.tamanos.forEach(t => addTamano('edit-tamanos-list', t.nombre, t.precio, t.stock || ''));
-      prod.sabores.forEach(s => addSabor('edit-sabores-list', s));
-
-      document.getElementById('edit-add-tamano').addEventListener('click', () => addTamano('edit-tamanos-list'));
-      document.getElementById('edit-add-sabor').addEventListener('click', () => addSabor('edit-sabores-list'));
-
-      modal.classList.remove('hidden');
-      cancelBtn.addEventListener('click', () => modal.classList.add('hidden'), { once: true });
-
-      form.addEventListener('submit', (ev) => {
-        ev.preventDefault();
-        const nombre = document.getElementById('editar-producto-nombre').value.trim();
-        const tamanosDivs = document.querySelectorAll('#edit-tamanos-list > div');
-        const saboresDivs = document.querySelectorAll('#edit-sabores-list > div');
-
-        if (!nombre || tamanosDivs.length === 0) return showToast('Nombre y al menos un tamaño son requeridos', true);
-
-        const tamanos = Array.from(tamanosDivs).map(div => {
-          const inputs = div.querySelectorAll('input');
-          const nom = inputs[0].value.trim();
-          const pre = parseFloat(inputs[1].value);
-          const stk = inputs[2].value ? parseInt(inputs[2].value) : undefined;
-          return { nombre: nom, precio: pre, stock: stk };
-        }).filter(t => t.nombre && !isNaN(t.precio));
-
-        const sabores = Array.from(saboresDivs).map(div => div.querySelector('input').value.trim()).filter(s => s);
-
-        if (tamanos.length === 0) return showToast('Agrega al menos un tamaño válido', true);
-
-        productos[index] = { nombre, tamanos, sabores };
-        localStorage.setItem('productos', JSON.stringify(productos));
-        loadProductos();
-        modal.classList.add('hidden');
-        showToast('Producto actualizado');
-      }, { once: true });
-    }
-
-    // Eliminar Producto
-    function deleteProducto(e) {
-      if (!confirm('¿Eliminar este producto?')) return;
-      const index = e.target.closest('button').dataset.index;
-      productos.splice(index, 1);
-      localStorage.setItem('productos', JSON.stringify(productos));
-      loadProductos();
-      showToast('Producto eliminado');
-    }
-
-    // Cargar Clientes
-    function loadClientes() {
-      const clientesDropdown = document.getElementById('clientes-dropdown');
-      const clientesTbody = document.getElementById('clientes-tbody');
-      clientesDropdown.innerHTML = '';
-      clientesTbody.innerHTML = '';
-
-      clientes.forEach((cli, index) => {
-        const div = document.createElement('div');
-        div.classList.add('p-2', 'hover:bg-gray-100', 'cursor-pointer');
-        div.dataset.id = index;
-        div.textContent = cli.nombre;
-        div.addEventListener('click', selectCliente);
-        clientesDropdown.appendChild(div);
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-4 py-4 text-sm">${cli.nombre}</td>
-          <td class="px-4 py-4 text-sm">${cli.telefono || ''}</td>
-          <td class="px-4 py-4 text-sm">${cli.ubicacion || ''}</td>
-          <td class="px-4 py-4 text-sm">${cli.notas || ''}</td>
-          <td class="px-4 py-4 text-sm">
-            <button class="edit-cliente text-blue-500 mr-2" data-index="${index}"><i class="fas fa-edit"></i></button>
-            <button class="delete-cliente text-red-500" data-index="${index}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
-        clientesTbody.appendChild(row);
-      });
-
-      if (clientes.length === 0) {
-        clientesTbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="5">No hay clientes registrados</td></tr>';
-      }
-
-      document.querySelectorAll('.edit-cliente').forEach(btn => btn.addEventListener('click', editCliente));
-      document.querySelectorAll('.delete-cliente').forEach(btn => btn.addEventListener('click', deleteCliente));
-    }
-
-    // Setup Clientes Section
-    function setupClientesSection() {
-      const nuevoBtn = document.getElementById('nuevo-cliente-form-btn');
-      const nuevoVentaBtn = document.getElementById('nuevo-cliente-btn');
-      const importarBtn = document.getElementById('importar-clientes-btn');
-      const exportarBtn = document.getElementById('exportar-clientes-btn');
-      const modal = document.getElementById('nuevo-cliente-modal');
-      const form = document.getElementById('nuevo-cliente-form');
-      const cancelBtn = document.getElementById('cancel-nuevo-cliente');
-      const importarModal = document.getElementById('importar-clientes-modal');
-      const importarForm = document.getElementById('importar-clientes-form');
-      const cancelImportarBtn = document.getElementById('cancel-importar-clientes');
-
-      [nuevoBtn, nuevoVentaBtn].forEach(btn => btn.addEventListener('click', () => modal.classList.remove('hidden')));
-      importarBtn.addEventListener('click', () => importarModal.classList.remove('hidden'));
-      exportarBtn.addEventListener('click', () => exportClientes('csv'));
-      cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
-      cancelImportarBtn.addEventListener('click', () => importarModal.classList.add('hidden'));
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('cliente-nombre').value.trim();
-        const telefono = document.getElementById('cliente-telefono').value.trim();
-        const ubicacion = document.getElementById('cliente-ubicacion').value.trim();
-        const notas = document.getElementById('cliente-notas').value.trim();
-
-        if (!nombre) return showToast('Nombre es requerido', true);
-
-        clientes.push({ nombre, telefono, ubicacion, notas });
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-        loadClientes();
-        modal.classList.add('hidden');
-        form.reset();
-        showToast('Cliente agregado');
-        if (document.getElementById('ventas-section').classList.contains('active')) {
-          currentVentaClienteId = (clientes.length - 1).toString();
-          document.getElementById('cliente-input').value = clientes[parseInt(currentVentaClienteId)].nombre;
-          document.getElementById('cliente-id').value = currentVentaClienteId;
-        }
-      });
-
-      importarForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        importClientes();
-        importarModal.classList.add('hidden');
-      });
-
-      document.getElementById('buscar-cliente').addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase();
-        const rows = document.querySelectorAll('#clientes-tbody tr');
-        rows.forEach(row => {
-          const nombre = row.querySelector('td:first-child').textContent.toLowerCase();
-          row.style.display = nombre.includes(search) ? '' : 'none';
-        });
-      });
-
-      const clienteInput = document.getElementById('cliente-input');
-      clienteInput.addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase();
-        const dropdown = document.getElementById('clientes-dropdown');
-        dropdown.classList.remove('hidden');
-        const options = dropdown.querySelectorAll('div');
-        options.forEach(opt => {
-          opt.style.display = opt.textContent.toLowerCase().includes(search) ? '' : 'none';
-        });
-      });
-    }
-
-    // Exportar Clientes
-    function exportClientes(format) {
-      if (clientes.length === 0) return showToast('No hay clientes para exportar', true);
-
-      let content = '';
-      if (format === 'csv') {
-        content = 'Nombre,Teléfono,Ubicación,Notas\n';
-        clientes.forEach(c => {
-          content += `${c.nombre},${c.telefono || ''},${c.ubicacion || ''},${c.notas || ''}\n`;
-        });
-      } else {
-        content = 'Clientes:\n\n';
-        clientes.forEach(c => {
-          content += `Nombre: ${c.nombre}\nTeléfono: ${c.telefono || ''}\nUbicación: ${c.ubicacion || ''}\nNotas: ${c.notas || ''}\n\n`;
-        });
-      }
-
-      downloadFile(content, `clientes.${format}`, `text/${format}`);
-      showToast('Clientes exportados');
-    }
-
-    // Importar Clientes
-    function importClientes() {
-      const fileInput = document.getElementById('importar-clientes-file');
-      const file = fileInput.files[0];
-      if (!file) return showToast('Selecciona un archivo', true);
-
-      const reader = new FileReader();
-      if (file.name.endsWith('.xlsx')) {
-        reader.onload = (e) => {
-          const data = e.target.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const json = XLSX.utils.sheet_to_json(sheet);
-          let newClientes = json.map(row => {
-            const nombre = row.Nombre;
-            const telefono = row['Teléfono'] || row.Telefono || '';
-            const ubicacion = row['Ubicación'] || row.Ubicacion || '';
-            const notas = row.Notas || '';
-            return { nombre, telefono, ubicacion, notas };
-          }).filter(c => c.nombre);
-          if (newClientes.length === 0) return showToast('Formato de archivo inválido', true);
-          clientes = [...clientes, ...newClientes];
-          localStorage.setItem('clientes', JSON.stringify(clientes));
-          loadClientes();
-          showToast('Clientes importados');
-        };
-        reader.readAsBinaryString(file);
-      } else {
-        reader.onload = (e) => {
-          const text = e.target.result;
-          let newClientes = [];
-          if (file.name.endsWith('.csv')) {
-            const lines = text.split('\n').slice(1).filter(line => line.trim());
-            newClientes = lines.map(line => {
-              const [nombre, telefono, ubicacion, notas] = line.split(',').map(s => s.trim());
-              return { nombre, telefono, ubicacion, notas };
-            });
-          } else {
-            const sections = text.split('\n\n').filter(s => s.trim());
-            newClientes = sections.map(section => {
-              const lines = section.split('\n').filter(l => l.trim());
-              const nombre = lines.find(l => l.startsWith('Nombre:'))?.split(':')[1]?.trim() || '';
-              const telefono = lines.find(l => l.startsWith('Teléfono:'))?.split(':')[1]?.trim() || '';
-              const ubicacion = lines.find(l => l.startsWith('Ubicación:'))?.split(':')[1]?.trim() || '';
-              const notas = lines.find(l => l.startsWith('Notas:'))?.split(':')[1]?.trim() || '';
-              return { nombre, telefono, ubicacion, notas };
-            });
-          }
-
-          newClientes = newClientes.filter(c => c.nombre);
-          if (newClientes.length === 0) return showToast('Formato de archivo inválido', true);
-
-          clientes = [...clientes, ...newClientes];
-          localStorage.setItem('clientes', JSON.stringify(clientes));
-          loadClientes();
-          showToast('Clientes importados');
-        };
-        reader.readAsText(file);
-      }
-    }
-
-    // Seleccionar Cliente en Ventas
-    function selectCliente(e) {
-      const id = e.target.dataset.id;
-      currentVentaClienteId = id;
-      document.getElementById('cliente-input').value = clientes[id].nombre;
-      document.getElementById('cliente-id').value = id;
-      document.getElementById('clientes-dropdown').classList.add('hidden');
-    }
-
-    // Editar Cliente
-    function editCliente(e) {
-      const index = e.target.closest('button').dataset.index;
-      const cli = clientes[index];
-      const modal = document.getElementById('editar-cliente-modal');
-      const form = document.getElementById('editar-cliente-form');
-      const cancelBtn = document.getElementById('cancel-editar-cliente');
-
-      document.getElementById('editar-cliente-id').value = index;
-      document.getElementById('editar-cliente-nombre').value = cli.nombre;
-      document.getElementById('editar-cliente-telefono').value = cli.telefono || '';
-      document.getElementById('editar-cliente-ubicacion').value = cli.ubicacion || '';
-      document.getElementById('editar-cliente-notas').value = cli.notas || '';
-
-      modal.classList.remove('hidden');
-      cancelBtn.addEventListener('click', () => modal.classList.add('hidden'), { once: true });
-
-      form.addEventListener('submit', (ev) => {
-        ev.preventDefault();
-        const nombre = document.getElementById('editar-cliente-nombre').value.trim();
-        const telefono = document.getElementById('editar-cliente-telefono').value.trim();
-        const ubicacion = document.getElementById('editar-cliente-ubicacion').value.trim();
-        const notas = document.getElementById('editar-cliente-notas').value.trim();
-
-        if (!nombre) return showToast('Nombre es requerido', true);
-
-        clientes[index] = { nombre, telefono, ubicacion, notas };
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-        loadClientes();
-        modal.classList.add('hidden');
-        showToast('Cliente actualizado');
-      }, { once: true });
-    }
-
-    // Eliminar Cliente
-    function deleteCliente(e) {
-      if (!confirm('¿Eliminar este cliente?')) return;
-      const index = e.target.closest('button').dataset.index;
-      clientes.splice(index, 1);
-      localStorage.setItem('clientes', JSON.stringify(clientes));
-      loadClientes();
-      showToast('Cliente eliminado');
-    }
-
-    // Setup Formulario de Ventas
-    function setupVentasForm() {
-      const form = document.getElementById('nueva-venta-form');
-      const productoSelect = document.getElementById('producto-select');
-      const tamanoSelect = document.getElementById('tamano-select');
-      const saborSelect = document.getElementById('sabor-select');
-      const precioInput = document.getElementById('precio-input');
-      const precioEspecialCheck = document.getElementById('precio-especial-check');
-      const reiniciarBtn = document.getElementById('reiniciar-venta-btn');
-      const guardarBtn = document.getElementById('guardar-venta-btn');
-      const nuevoProductoBtn = document.getElementById('nuevo-producto-venta-btn');
-      const pagadoCheck = document.getElementById('pagado-check');
-
-      nuevoProductoBtn.addEventListener('click', () => {
-        document.getElementById('tamanos-list').innerHTML = '';
-        document.getElementById('sabores-list').innerHTML = '';
-        document.getElementById('nuevo-producto-modal').classList.remove('hidden');
-      });
-
-      productoSelect.addEventListener('change', (e) => {
-        const index = e.target.value;
-        if (!index) return;
-        const prod = productos[index];
-        tamanoSelect.innerHTML = '<option value="">Seleccionar tamaño...</option>';
-        prod.tamanos.forEach((t, i) => {
-          const opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = `${t.nombre} - ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`;
-          tamanoSelect.appendChild(opt);
-        });
-        tamanoSelect.disabled = false;
-
-        saborSelect.innerHTML = '<option value="">Seleccionar sabor...</option>';
-        prod.sabores.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = s;
-          saborSelect.appendChild(opt);
-        });
-        saborSelect.disabled = prod.sabores.length === 0;
-      });
-
-      tamanoSelect.addEventListener('change', (e) => {
-        const prodIndex = productoSelect.value;
-        const tamIndex = e.target.value;
-        if (!prodIndex || !tamIndex) return;
-        const precio = productos[prodIndex].tamanos[tamIndex].precio;
-        precioInput.value = precio.toFixed(2);
-        precioInput.disabled = false;
-      });
-
-      precioEspecialCheck.addEventListener('change', (e) => {
-        precioInput.disabled = !e.target.checked;
-      });
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const prodIndex = productoSelect.value;
-        const tamIndex = tamanoSelect.value;
-        const sabor = saborSelect.value;
-        const cantidad = parseInt(document.getElementById('cantidad-input').value);
-        let precio = parseFloat(precioInput.value);
-        const prod = productos[prodIndex];
-
-        if (!prodIndex || !tamIndex || isNaN(cantidad) || cantidad < 1 || isNaN(precio)) {
-          return showToast('Completa todos los campos requeridos', true);
-        }
-
-        const tam = prod.tamanos[tamIndex];
-        if (tam.stock !== undefined && tam.stock < cantidad) {
-          return showToast('Stock insuficiente', true);
-        }
-
-        if (!precioEspecialCheck.checked) {
-          precio = tam.precio;
-        }
-
-        const item = {
-          producto: prod.nombre,
-          tamano: tam.nombre,
-          sabor: sabor || '',
-          cantidad,
-          precio,
-          subtotal: cantidad * precio,
-          prodIndex,
-          tamIndex
-        };
-
-        currentVentaItems.push(item);
-        updateVentaTable();
-        productoSelect.focus(); // Mejora UX: enfoca en producto para agregar más rápido
-        tamanoSelect.innerHTML = '<option value="">Seleccionar tamaño...</option>';
-        saborSelect.innerHTML = '<option value="">Seleccionar sabor...</option>';
-        tamanoSelect.disabled = true;
-        saborSelect.disabled = true;
-        precioInput.value = '';
-        precioInput.disabled = true;
-        precioEspecialCheck.checked = false;
-        document.getElementById('cantidad-input').value = 1;
-      });
-
-      reiniciarBtn.addEventListener('click', () => {
-        if (!confirm('¿Reiniciar la venta actual?')) return;
-        resetVenta();
-      });
-
-      guardarBtn.addEventListener('click', () => {
-        if (currentVentaItems.length === 0) return showToast('No hay items en la venta', true);
-
-        const total = currentVentaItems.reduce((sum, item) => sum + item.subtotal, 0);
-        const fecha = new Date().toISOString();
-        currentVentaNotas = document.getElementById('notas-venta').value.trim();
-        const status = pagadoCheck.checked ? 'paid' : 'pending';
-
-        currentVentaItems.forEach(item => {
-          const tam = productos[item.prodIndex].tamanos[item.tamIndex];
-          if (tam.stock !== undefined) {
-            tam.stock -= item.cantidad;
-          }
-        });
-
-        ventas.push({
-          clienteId: currentVentaClienteId,
-          items: currentVentaItems,
-          total,
-          notas: currentVentaNotas,
-          fecha,
-          status
-        });
-
-        localStorage.setItem('ventas', JSON.stringify(ventas));
-        localStorage.setItem('productos', JSON.stringify(productos));
-        loadProductos();
-        showToast('Venta guardada');
-        resetVenta();
-      });
-    }
-
-    // Actualizar Tabla de Venta
-    function updateVentaTable() {
-      const tbody = document.getElementById('items-venta-tbody');
-      tbody.innerHTML = '';
-      let total = 0;
-
-      currentVentaItems.forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-4 py-4 text-sm">${item.producto}</td>
-          <td class="px-4 py-4 text-sm">${item.tamano}</td>
-          <td class="px-4 py-4 text-sm">${item.sabor}</td>
-          <td class="px-4 py-4 text-sm">${item.cantidad}</td>
-          <td class="px-4 py-4 text-sm">${formatCurrency(item.precio)}</td>
-          <td class="px-4 py-4 text-sm">${formatCurrency(item.subtotal)}</td>
-          <td class="px-4 py-4 text-sm">
-            <button class="delete-item text-red-500" data-index="${index}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
-        tbody.appendChild(row);
-        total += item.subtotal;
-      });
-
-      if (currentVentaItems.length === 0) {
-        tbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="7">No hay items en la venta actual</td></tr>';
-      }
-
-      document.getElementById('total-venta').textContent = formatCurrency(total);
-
-      document.querySelectorAll('.delete-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const index = e.target.closest('button').dataset.index;
-          currentVentaItems.splice(index, 1);
-          updateVentaTable();
-        });
-      });
-    }
-
-    // Reset Venta
-    function resetVenta() {
-      currentVentaItems = [];
-      currentVentaClienteId = null;
-      currentVentaNotas = '';
-      document.getElementById('cliente-input').value = '';
-      document.getElementById('cliente-id').value = '';
-      document.getElementById('notas-venta').value = '';
-      document.getElementById('producto-select').value = '';
-      document.getElementById('tamano-select').innerHTML = '<option value="">Seleccionar tamaño...</option>';
-      document.getElementById('sabor-select').innerHTML = '<option value="">Seleccionar sabor...</option>';
-      document.getElementById('tamano-select').disabled = true;
-      document.getElementById('sabor-select').disabled = true;
-      document.getElementById('cantidad-input').value = 1;
-      document.getElementById('precio-input').value = '';
-      document.getElementById('precio-input').disabled = true;
-      document.getElementById('precio-especial-check').checked = false;
-      document.getElementById('pagado-check').checked = false;
-      updateVentaTable();
-    }
-
-    // Setup Resumen
-    function setupResumenSection() {
-      const previsualizarBtn = document.getElementById('previsualizar-btn');
-      const exportTxtBtn = document.getElementById('exportar-txt-btn');
-      const exportCsvBtn = document.getElementById('exportar-csv-btn');
-      const exportPdfBtn = document.getElementById('exportar-pdf-btn');
-      const generarAnalisisBtn = document.getElementById('generar-analisis-btn');
-
-      previsualizarBtn.addEventListener('click', showExportPreview);
-      exportTxtBtn.addEventListener('click', () => exportVentas('txt'));
-      exportCsvBtn.addEventListener('click', () => exportVentas('csv'));
-      exportPdfBtn.addEventListener('click', () => exportVentas('pdf'));
-      generarAnalisisBtn.addEventListener('click', generateAnalisis);
-    }
-
-    // Actualizar Resumen
-    function updateResumen() {
-      const today = getToday();
-      const monthStart = getMonthStart();
-
-      const ventasHoy = ventas.filter(v => v.fecha.startsWith(today));
-      const totalHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
-      document.getElementById('ventas-hoy-total').textContent = formatCurrency(totalHoy);
-      document.getElementById('ventas-hoy-cantidad').textContent = `${ventasHoy.length} ventas`;
-
-      const ventasMes = ventas.filter(v => v.fecha >= monthStart);
-      const totalMes = ventasMes.reduce((sum, v) => sum + v.total, 0);
-      document.getElementById('ventas-mes-total').textContent = formatCurrency(totalMes);
-      document.getElementById('ventas-mes-cantidad').textContent = `${ventasMes.length} ventas`;
-
-      document.getElementById('clientes-total').textContent = clientes.length;
-    }
-
-    // Generar texto de factura
-    function generateInvoiceText(v) {
-      const fecha = new Date(v.fecha).toLocaleString('es-ES');
-      const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
-      let itemsText = v.items.map(i => `${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x ${i.cantidad} @ ${formatCurrency(i.precio)} = ${formatCurrency(i.subtotal)}`).join('\n');
-      return `Factura de Venta
-
-Fecha: ${fecha}
-Cliente: ${cliente}
-Notas: ${v.notas || 'Ninguna'}
-Status: ${v.status === 'paid' ? 'Pagado' : 'Pendiente'}
-
-Items:
-${itemsText}
-
-Total: ${formatCurrency(v.total)}
-`;
-    }
-
-    // Generar contenido CSV
-    function generateCsvContent(filteredVentas) {
-      let content = 'Fecha,Cliente,Total,Notas,Status,Items\n';
-      filteredVentas.forEach(v => {
-        const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
-        const items = v.items.map(i => `${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x${i.cantidad} @${formatCurrency(i.precio)}`).join('; ');
-        content += `${v.fecha},${cliente},${v.total},${v.notas || ''},${v.status},"${items}"\n`;
-      });
-      return content;
-    }
-
-    // Exportar Ventas
-    function exportVentas(format) {
-      const desde = document.getElementById('fecha-desde').value || '1900-01-01';
-      const hasta = document.getElementById('fecha-hasta').value || '9999-12-31';
-
-      const filteredVentas = ventas.filter(v => v.fecha >= desde && v.fecha <= hasta + 'T23:59:59');
-
-      if (filteredVentas.length === 0) return showToast('No hay ventas en el rango seleccionado', true);
-
-      if (format === 'txt') {
-        const content = filteredVentas.map(generateInvoiceText).join('\n\n------------------------\n\n');
-        downloadFile(content, 'ventas.txt', 'text/plain');
-      } else if (format === 'csv') {
-        const content = generateCsvContent(filteredVentas);
-        downloadFile(content, 'ventas.csv', 'text/csv');
-      } else if (format === 'pdf') {
-        generatePdf(filteredVentas);
-      }
-      showToast('Ventas exportadas');
-    }
-
-    // Generar PDF
-    function generatePdf(filteredVentas) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      let y = 10;
-      filteredVentas.forEach((v, idx) => {
-        if (idx > 0) doc.addPage();
-        doc.setFontSize(16);
-        doc.text('Factura de Venta', 10, y);
-        y += 10;
-        doc.setFontSize(12);
-        doc.text(`Fecha: ${new Date(v.fecha).toLocaleString('es-ES')}`, 10, y);
-        y += 7;
-        const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
-        doc.text(`Cliente: ${cliente}`, 10, y);
-        y += 7;
-        doc.text(`Notas: ${v.notas || 'Ninguna'}`, 10, y);
-        y += 7;
-        doc.text(`Status: ${v.status === 'paid' ? 'Pagado' : 'Pendiente'}`, 10, y);
-        y += 10;
-        doc.text('Items:', 10, y);
-        y += 7;
-        v.items.forEach(i => {
-          if (y > 270) {
-            doc.addPage();
-            y = 10;
-          }
-          doc.text(`${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x ${i.cantidad} @ ${formatCurrency(i.precio)} = ${formatCurrency(i.subtotal)}`, 10, y);
-          y += 7;
-        });
-        y += 7;
-        doc.text(`Total: ${formatCurrency(v.total)}`, 10, y);
-      });
-      doc.save('ventas.pdf');
-    }
-
-    // Mostrar Previsualización de Export
-    function showExportPreview() {
-      const desde = document.getElementById('fecha-desde').value || '1900-01-01';
-      const hasta = document.getElementById('fecha-hasta').value || '9999-12-31';
-
-      const filteredVentas = ventas.filter(v => v.fecha >= desde && v.fecha <= hasta + 'T23:59:59');
-
-      if (filteredVentas.length === 0) return showToast('No hay ventas en el rango seleccionado', true);
-
-      const invoiceContent = filteredVentas.map(generateInvoiceText).join('\n\n------------------------\n\n');
-      document.getElementById('preview-content').innerHTML = `<pre>${invoiceContent}</pre>`;
-      const modal = document.getElementById('export-preview-modal');
-      modal.classList.remove('hidden');
-
-      document.getElementById('close-preview').addEventListener('click', () => modal.classList.add('hidden'), { once: true });
-      document.getElementById('download-txt').addEventListener('click', () => {
-        downloadFile(invoiceContent, 'ventas.txt', 'text/plain');
-        showToast('Descargado como TXT');
-      }, { once: true });
-      document.getElementById('download-csv').addEventListener('click', () => {
-        const csvContent = generateCsvContent(filteredVentas);
-        downloadFile(csvContent, 'ventas.csv', 'text/csv');
-        showToast('Descargado como CSV');
-      }, { once: true });
-      document.getElementById('download-pdf').addEventListener('click', () => {
-        generatePdf(filteredVentas);
-        showToast('Descargado como PDF');
-      }, { once: true });
-    }
-
-    // Generar Análisis
-    function generateAnalisis() {
-      const container = document.getElementById('analisis-container');
-      const content = document.getElementById('analisis-content');
-      const desde = document.getElementById('fecha-desde').value || getMonthStart();
-      const hasta = document.getElementById('fecha-hasta').value || getToday();
-
-      const filteredVentas = ventas.filter(v => v.fecha >= desde && v.fecha <= hasta + 'T23:59:59');
-
-      if (filteredVentas.length === 0) {
-        content.innerHTML = '<p>No hay datos para analizar en el rango seleccionado.</p>';
-      } else {
-        const total = filteredVentas.reduce((sum, v) => sum + v.total, 0);
-        const avg = total / filteredVentas.length;
-        const topCliente = filteredVentas.reduce((acc, v) => {
-          const id = v.clienteId !== null ? v.clienteId : 'sin_cliente';
-          acc[id] = (acc[id] || 0) + v.total;
-          return acc;
-        }, {});
-        const topClienteId = Object.keys(topCliente).reduce((a, b) => topCliente[a] > topCliente[b] ? a : b);
-        const topClienteName = topClienteId !== 'sin_cliente' ? (clientes[topClienteId]?.nombre || 'Desconocido') : 'Sin cliente';
-        const uniqueClientes = new Set(filteredVentas.map(v => v.clienteId).filter(id => id !== null)).size;
-        let totalItems = 0;
-        filteredVentas.forEach(v => {
-          totalItems += v.items.reduce((sum, i) => sum + i.cantidad, 0);
-        });
-        const productSales = {};
-        filteredVentas.forEach(v => {
-          v.items.forEach(item => {
-            const key = `${item.producto} - ${item.tamano} - ${item.sabor || 'Sin sabor'}`;
-            productSales[key] = (productSales[key] || 0) + item.cantidad;
-          });
-        });
-        const sortedProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
-        const topProduct = sortedProducts[0] ? `${sortedProducts[0][0]} (${sortedProducts[0][1]} unidades)` : 'N/A';
-        const totalPending = filteredVentas.filter(v => v.status === 'pending').reduce((sum, v) => sum + v.total, 0);
-
-        content.innerHTML = `
-          <p><strong>Total de ventas:</strong> ${formatCurrency(total)}</p>
-          <p><strong>Total pendiente:</strong> ${formatCurrency(totalPending)}</p>
-          <p><strong>Promedio por venta:</strong> ${formatCurrency(avg)}</p>
-          <p><strong>Cliente top:</strong> ${topClienteName} (${formatCurrency(topCliente[topClienteId])})</p>
-          <p><strong>Clientes únicos (registrados):</strong> ${uniqueClientes}</p>
-          <p><strong>Total items vendidos:</strong> ${totalItems}</p>
-          <p><strong>Producto top:</strong> ${topProduct}</p>
-        `;
-      }
-
-      container.classList.remove('hidden');
-    }
-
-    // Cargar Historial
-    function loadHistorial() {
-      const desde = document.getElementById('historial-desde').value || '1900-01-01';
-      const hasta = document.getElementById('historial-hasta').value || '9999-12-31';
-      const clienteSearch = document.getElementById('historial-cliente').value.toLowerCase();
-
-      let filtered = ventas.filter(v => v.fecha >= desde && v.fecha <= hasta + 'T23:59:59');
-
-      if (clienteSearch) {
-        filtered = filtered.filter(v => {
-          if (v.clienteId === null) return 'sin cliente'.includes(clienteSearch);
-          return clientes[v.clienteId]?.nombre.toLowerCase().includes(clienteSearch);
-        });
-      }
-
-      filtered.sort((a, b) => b.fecha.localeCompare(a.fecha));
-
-      const tbody = document.getElementById('ventas-tbody');
-      tbody.innerHTML = '';
-
-      filtered.forEach((v, originalIndex) => {
-        const cliente = v.clienteId !== null ? (clientes[v.clienteId] ? clientes[v.clienteId].nombre : 'Desconocido') : 'Sin cliente';
-        const fecha = new Date(v.fecha).toLocaleString('es-ES');
-        const statusText = v.status === 'paid' ? 'Pagado' : 'Pendiente';
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-4 py-4 text-sm">${fecha}</td>
-          <td class="px-4 py-4 text-sm">${cliente}</td>
-          <td class="px-4 py-4 text-sm">${formatCurrency(v.total)}</td>
-          <td class="px-4 py-4 text-sm">${v.notas || ''}</td>
-          <td class="px-4 py-4 text-sm">${statusText}</td>
-          <td class="px-4 py-4 text-sm">
-            <button class="view-venta text-blue-500 mr-2" data-index="${ventas.indexOf(v)}"><i class="fas fa-eye"></i></button>
-            ${v.status === 'pending' ? `<button class="mark-paid text-green-500 mr-2" data-index="${ventas.indexOf(v)}"><i class="fas fa-check"></i></button>` : ''}
-            <button class="delete-venta text-red-500" data-index="${ventas.indexOf(v)}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td class="px-4 py-4 text-sm text-gray-500 text-center" colspan="6">No hay ventas registradas</td></tr>';
-      }
-
-      document.querySelectorAll('.view-venta').forEach(btn => btn.addEventListener('click', viewVenta));
-      document.querySelectorAll('.delete-venta').forEach(btn => btn.addEventListener('click', deleteVenta));
-      document.querySelectorAll('.mark-paid').forEach(btn => btn.addEventListener('click', markPaid));
-
-      // Filtros historial
-      document.getElementById('historial-desde').addEventListener('change', loadHistorial);
-      document.getElementById('historial-hasta').addEventListener('change', loadHistorial);
-      document.getElementById('historial-cliente').addEventListener('input', loadHistorial);
-    }
-
-    // Ver Venta
-    function viewVenta(e) {
-      const index = e.target.closest('button').dataset.index;
-      const v = ventas[index];
-      const cliente = v.clienteId !== null ? (clientes[v.clienteId]?.nombre || 'Desconocido') : 'Sin cliente';
-      const fecha = new Date(v.fecha).toLocaleString('es-ES');
-      const statusText = v.status === 'paid' ? 'Pagado' : 'Pendiente';
-      const content = document.getElementById('view-venta-content');
-      content.innerHTML = `
-        <p><strong>Fecha:</strong> ${fecha}</p>
-        <p><strong>Cliente:</strong> ${cliente}</p>
-        <p><strong>Notas:</strong> ${v.notas || 'Ninguna'}</p>
-        <p><strong>Status:</strong> ${statusText}</p>
-        <h3 class="font-medium mt-4 mb-2">Items:</h3>
-        <ul class="list-disc pl-5">
-          ${v.items.map(i => `<li>${i.producto} ${i.tamano}${i.sabor ? ` (${i.sabor})` : ''} x${i.cantidad} @${formatCurrency(i.precio)} = ${formatCurrency(i.subtotal)}</li>`).join('')}
-        </ul>
-        <p class="mt-4"><strong>Total:</strong> ${formatCurrency(v.total)}</p>
-      `;
-      const modal = document.getElementById('view-venta-modal');
-      modal.classList.remove('hidden');
-      document.getElementById('close-view-venta').addEventListener('click', () => modal.classList.add('hidden'), { once: true });
-    }
-
-    // Marcar como Pagado
-    function markPaid(e) {
-      const index = e.target.closest('button').dataset.index;
-      ventas[index].status = 'paid';
-      localStorage.setItem('ventas', JSON.stringify(ventas));
-      loadHistorial();
-      showToast('Venta marcada como pagada');
-    }
-
-    // Eliminar Venta
-    function deleteVenta(e) {
-      if (!confirm('¿Eliminar esta venta?')) return;
-      const index = e.target.closest('button').dataset.index;
-      const v = ventas[index];
-      v.items.forEach(item => {
-        if (item.prodIndex !== undefined && item.tamIndex !== undefined) {
-          const tam = productos[item.prodIndex].tamanos[item.tamIndex];
-          if (tam.stock !== undefined) tam.stock += item.cantidad;
-        }
-      });
-      ventas.splice(index, 1);
-      localStorage.setItem('ventas', JSON.stringify(ventas));
-      localStorage.setItem('productos', JSON.stringify(productos));
-      loadHistorial();
-      loadProductos();
-      updateResumen();
-      showToast('Venta eliminada');
-    }
-
-    // Setup Configuración
-    function setupConfiguracion() {
-      document.getElementById('borrar-datos-btn').addEventListener('click', () => {
-        const input = prompt('Ingrese la contraseña para borrar datos:');
-        if (input !== adminPassword) {
-          showToast('Contraseña incorrecta', true);
-          return;
-        }
-        if (!confirm('¿Estás seguro de borrar todos los datos?')) return;
-        localStorage.clear();
-        productos = [];
-        clientes = [];
-        ventas = [];
-        adminPassword = '4602';
-        localStorage.setItem('adminPassword', adminPassword);
-        loadProductos();
-        loadClientes();
-        loadHistorial();
-        updateResumen();
-        resetVenta();
-        showToast('Todos los datos han sido borrados');
-      });
-    }
-
-    // Setup Formulario de Cambio de Contraseña
-    function setupSecurityForm() {
-      const form = document.getElementById('cambiar-contrasena-form');
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const current = document.getElementById('current-password').value;
-        const newPass = document.getElementById('new-password').value;
-        const confirm = document.getElementById('confirm-password').value;
-
-        if (current !== adminPassword) return showToast('Contraseña actual incorrecta', true);
-        if (newPass !== confirm) return showToast('Las nuevas contraseñas no coinciden', true);
-        if (!newPass) return showToast('Nueva contraseña requerida', true);
-
-        adminPassword = newPass;
-        localStorage.setItem('adminPassword', adminPassword);
-        form.reset();
-        showToast('Contraseña cambiada exitosamente');
-      });
-    }
-  </script>
-</body>
-</html>
+              <input type="date" id="fecha-hasta" class="w-full border border-gray-300 rounded-md px-3 py-
