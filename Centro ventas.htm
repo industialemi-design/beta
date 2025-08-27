@@ -103,6 +103,31 @@
     .toast.error {
       background-color: #ef4444;
     }
+    /* Fixes for mobile */
+    @media (max-width: 768px) {
+      .quantity-container button {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+      .quantity-container input {
+        text-align: center;
+        max-width: 60px;
+      }
+      .quantity-container {
+        max-width: 120px;
+      }
+    }
+    .custom-select-input {
+      cursor: pointer;
+    }
+    .modal-list div {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .modal-list div:hover {
+      background-color: #f3f4f6;
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -142,48 +167,45 @@
     <!-- Ventas Section -->
     <section id="ventas-section" class="section active">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Registro de Ventas</h1>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Nueva Venta</h2>
-       
+      
         <form id="nueva-venta-form" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-box mr-1"></i>Producto</label>
-              <select id="producto-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                <option value="">Seleccionar producto...</option>
-              </select>
+              <input type="text" id="producto-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 custom-select-input" placeholder="Seleccionar producto..." readonly>
+              <input type="hidden" id="producto-id">
               <button type="button" id="nuevo-producto-venta-btn" class="mt-1 text-sm text-orange-500 hover:underline">
                 <i class="fas fa-plus mr-1"></i> Nuevo producto
               </button>
             </div>
-           
+          
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-ruler mr-1"></i>Tamaño</label>
-              <select id="tamano-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled>
-                <option value="">Seleccionar tamaño...</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-weight-hanging mr-1"></i>Tamaño</label>
+              <input type="text" id="tamano-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 custom-select-input" placeholder="Seleccionar tamaño..." readonly disabled>
+              <input type="hidden" id="tamano-id">
             </div>
-           
+          
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-ice-cream mr-1"></i>Sabor (opcional)</label>
-              <select id="sabor-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled>
-                <option value="">Seleccionar sabor...</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-pepper-hot mr-1"></i>Sabor (opcional)</label>
+              <input type="text" id="sabor-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 custom-select-input" placeholder="Seleccionar sabor..." readonly disabled>
+              <input type="hidden" id="sabor-value">
             </div>
-           
+          
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-hashtag mr-1"></i>Cantidad</label>
-              <div class="flex items-center border border-gray-300 rounded-md">
-                <button type="button" id="decrease-qty" class="px-3 py-2 text-gray-700 hover:bg-gray-100">-</button>
-                <input type="number" id="cantidad-input" class="flex-1 border-0 px-3 py-2 focus:outline-none" min="1" value="1">
-                <button type="button" id="increase-qty" class="px-3 py-2 text-gray-700 hover:bg-gray-100">+</button>
+              <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-sort-numeric-up mr-1"></i>Cantidad</label>
+              <div class="flex items-center border border-gray-300 rounded-md quantity-container">
+                <button type="button" id="decrease-qty" class="px-2 py-2 text-gray-700 hover:bg-gray-100">-</button>
+                <input type="number" id="cantidad-input" class="flex-1 border-0 px-2 py-2 focus:outline-none text-center" min="1" value="1">
+                <button type="button" id="increase-qty" class="px-2 py-2 text-gray-700 hover:bg-gray-100">+</button>
               </div>
             </div>
-           
+          
             <div>
               <div class="flex items-center mb-1">
-                <label class="block text-sm font-medium text-gray-700"><i class="fas fa-dollar-sign mr-1"></i>Precio</label>
+                <label class="block text-sm font-medium text-gray-700"><i class="fas fa-money-bill-wave mr-1"></i>Precio</label>
                 <div class="ml-2">
                   <input type="checkbox" id="precio-especial-check" class="form-checkbox">
                   <label for="precio-especial-check" class="text-sm text-gray-600 ml-1">Usar precio especial</label>
@@ -191,7 +213,7 @@
               </div>
               <input type="number" id="precio-input" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" disabled step="0.01">
             </div>
-           
+          
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-user mr-1"></i>Cliente (opcional)</label>
               <div class="relative">
@@ -204,13 +226,13 @@
                 <i class="fas fa-plus mr-1"></i> Nuevo cliente
               </button>
             </div>
-           
+          
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1"><i class="fas fa-note-sticky mr-1"></i>Notas adicionales</label>
               <textarea id="notas-venta" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" rows="2"></textarea>
             </div>
           </div>
-         
+        
           <div class="flex justify-end">
             <button type="submit" id="agregar-item-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
               <i class="fas fa-plus mr-1"></i> Agregar a venta
@@ -218,10 +240,10 @@
           </div>
         </form>
       </div>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Items en esta venta</h2>
-       
+      
         <div class="overflow-x-auto">
           <table class="w-full min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -249,12 +271,12 @@
             </tfoot>
           </table>
         </div>
-       
+      
         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <button id="reiniciar-venta-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
             <i class="fas fa-undo mr-1"></i> Reiniciar venta
           </button>
-         
+        
           <div class="flex items-center gap-3">
             <button id="guardar-venta-btn" class="btn-primary text-white font-medium py-2 px-6 rounded-md">
               <i class="fas fa-save mr-1"></i> Guardar Venta
@@ -263,11 +285,11 @@
         </div>
       </div>
     </section>
-   
+  
     <!-- Productos Section -->
     <section id="productos-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Productos</h1>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
           <h2 class="text-xl font-semibold text-gray-700">Lista de Productos</h2>
@@ -283,11 +305,11 @@
             </button>
           </div>
         </div>
-       
+      
         <div class="mb-4">
           <input type="text" id="buscar-producto" placeholder="Buscar producto..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
-       
+      
         <div class="overflow-x-auto">
           <table class="w-full min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -307,11 +329,11 @@
         </div>
       </div>
     </section>
-   
+  
     <!-- Clientes Section -->
     <section id="clientes-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Gestión de Clientes</h1>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
           <h2 class="text-xl font-semibold text-gray-700">Lista de Clientes</h2>
@@ -327,11 +349,11 @@
             </button>
           </div>
         </div>
-       
+      
         <div class="mb-4">
           <input type="text" id="buscar-cliente" placeholder="Buscar cliente..." class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
-       
+      
         <div class="overflow-x-auto">
           <table class="w-full min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -352,11 +374,11 @@
         </div>
       </div>
     </section>
-   
+  
     <!-- Resumen Section -->
     <section id="resumen-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Resumen y Análisis</h1>
-     
+    
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center justify-between">
@@ -368,7 +390,7 @@
           <p class="text-3xl font-bold text-gray-800 mt-2" id="ventas-hoy-total">Bs 0.00</p>
           <p class="text-sm text-gray-500 mt-1" id="ventas-hoy-cantidad">0 ventas</p>
         </div>
-       
+      
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-700">Ventas del mes</h2>
@@ -379,7 +401,7 @@
           <p class="text-3xl font-bold text-gray-800 mt-2" id="ventas-mes-total">Bs 0.00</p>
           <p class="text-sm text-gray-500 mt-1" id="ventas-mes-cantidad">0 ventas</p>
         </div>
-       
+      
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-700">Clientes totales</h2>
@@ -391,10 +413,10 @@
           <p class="text-sm text-gray-500 mt-1">clientes registrados</p>
         </div>
       </div>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Exportar datos de ventas</h2>
-       
+      
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Rango de fechas</label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -408,7 +430,7 @@
             </div>
           </div>
         </div>
-       
+      
         <div class="flex flex-col md:flex-row gap-4">
           <button id="previsualizar-btn" class="btn-secondary text-white font-medium py-2 px-6 rounded-md">
             <i class="fas fa-eye mr-1"></i> Previsualizar
@@ -427,7 +449,7 @@
           </button>
         </div>
       </div>
-     
+    
       <div id="analisis-container" class="bg-white rounded-lg shadow-md p-6 hidden">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Análisis de Ventas</h2>
         <div id="analisis-content" class="prose prose-orange max-w-none">
@@ -435,14 +457,14 @@
         </div>
       </div>
     </section>
-   
+  
     <!-- Historial Section -->
     <section id="historial-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Historial de Ventas</h1>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Lista de Ventas</h2>
-       
+      
         <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
@@ -469,7 +491,7 @@
             </select>
           </div>
         </div>
-       
+      
         <div class="overflow-x-auto">
           <table class="w-full min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -493,14 +515,14 @@
         </div>
       </div>
     </section>
-   
+  
     <!-- Configuración Section -->
     <section id="configuracion-section" class="section">
       <h1 class="text-3xl font-bold mb-6 text-gray-800">Configuración</h1>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Seguridad</h2>
-       
+      
         <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
           <form id="cambiar-contrasena-form" class="space-y-4">
             <div>
@@ -523,7 +545,7 @@
           </form>
         </div>
       </div>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Bloqueo de Secciones</h2>
         <div class="space-y-2">
@@ -564,14 +586,14 @@
           </button>
         </div>
       </div>
-     
+    
       <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4 text-red-600">Zona de peligro</h2>
-       
+      
         <div class="border border-red-300 rounded-lg p-4 bg-red-50">
           <h3 class="font-medium text-red-700 mb-2">Borrar todos los datos</h3>
           <p class="text-sm text-red-600 mb-4">Esta acción eliminará permanentemente todas las ventas, productos y clientes. No se puede deshacer.</p>
-         
+        
           <button id="borrar-datos-btn" class="btn-danger text-white font-medium py-2 px-6 rounded-md">
             <i class="fas fa-trash mr-1"></i> Borrar todos los datos
           </button>
@@ -817,6 +839,37 @@
       </form>
     </div>
   </div>
+  <!-- New Modals for Custom Selection -->
+  <!-- Modal for Product Selection -->
+  <div id="product-select-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Seleccionar Producto</h2>
+      <div id="product-list" class="modal-list"></div>
+      <div class="flex justify-end mt-4">
+        <button id="close-product-select" class="btn-secondary text-white py-2 px-4 rounded-md">Cerrar</button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Size Selection -->
+  <div id="tamano-select-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Seleccionar Tamaño</h2>
+      <div id="tamano-list" class="modal-list"></div>
+      <div class="flex justify-end mt-4">
+        <button id="close-tamano-select" class="btn-secondary text-white py-2 px-4 rounded-md">Cerrar</button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Flavor Selection -->
+  <div id="sabor-select-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Seleccionar Sabor</h2>
+      <div id="sabor-list" class="modal-list"></div>
+      <div class="flex justify-end mt-4">
+        <button id="close-sabor-select" class="btn-secondary text-white py-2 px-4 rounded-md">Cerrar</button>
+      </div>
+    </div>
+  </div>
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
   <script>
@@ -974,12 +1027,7 @@
         mobileMenu.classList.toggle('hidden');
       };
       mobileMenuButton.addEventListener('click', toggleMenu);
-      mobileMenuButton.addEventListener('touchstart', toggleMenu);
-      document.addEventListener('touchstart', (e) => {
-        if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
-          mobileMenu.classList.add('hidden');
-        }
-      });
+      // Removed touchstart to avoid conflicts
       document.addEventListener('click', (e) => {
         if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
           mobileMenu.classList.add('hidden');
@@ -1046,15 +1094,9 @@
     }
     // Cargar Productos
     function loadProductos() {
-      const productoSelect = document.getElementById('producto-select');
       const productosTbody = document.getElementById('productos-tbody');
-      productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
       productosTbody.innerHTML = '';
       productos.forEach((prod, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = prod.nombre;
-        productoSelect.appendChild(option);
         const row = document.createElement('tr');
         const tamanosStr = prod.tamanos.map(t => `${t.nombre}: ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`).join(', ');
         row.innerHTML = `
@@ -1083,6 +1125,80 @@
           }
         });
       }));
+      // Update product list in modal
+      updateProductModalList();
+    }
+    // Update Product Modal List
+    function updateProductModalList() {
+      const productList = document.getElementById('product-list');
+      productList.innerHTML = '';
+      productos.forEach((prod, index) => {
+        const div = document.createElement('div');
+        div.textContent = prod.nombre;
+        div.dataset.index = index;
+        div.addEventListener('click', selectProductFromModal);
+        productList.appendChild(div);
+      });
+    }
+    // Select Product from Modal
+    function selectProductFromModal(e) {
+      const index = e.target.dataset.index;
+      const prod = productos[index];
+      document.getElementById('producto-input').value = prod.nombre;
+      document.getElementById('producto-id').value = index;
+      document.getElementById('tamano-input').value = '';
+      document.getElementById('tamano-id').value = '';
+      document.getElementById('tamano-input').disabled = false;
+      document.getElementById('sabor-input').value = '';
+      document.getElementById('sabor-value').value = '';
+      document.getElementById('sabor-input').disabled = prod.sabores.length === 0;
+      document.getElementById('precio-input').value = '';
+      updateTamanoModalList(index);
+      updateSaborModalList(index);
+      document.getElementById('product-select-modal').classList.add('hidden');
+    }
+    // Update Tamano Modal List
+    function updateTamanoModalList(prodIndex) {
+      const tamanoList = document.getElementById('tamano-list');
+      tamanoList.innerHTML = '';
+      const prod = productos[prodIndex];
+      prod.tamanos.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.textContent = `${t.nombre} - ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`;
+        div.dataset.index = i;
+        div.addEventListener('click', selectTamanoFromModal);
+        tamanoList.appendChild(div);
+      });
+    }
+    // Select Tamano from Modal
+    function selectTamanoFromModal(e) {
+      const tamIndex = e.target.dataset.index;
+      const prodIndex = document.getElementById('producto-id').value;
+      const tam = productos[prodIndex].tamanos[tamIndex];
+      document.getElementById('tamano-input').value = tam.nombre;
+      document.getElementById('tamano-id').value = tamIndex;
+      document.getElementById('precio-input').value = tam.precio.toFixed(2);
+      document.getElementById('tamano-select-modal').classList.add('hidden');
+    }
+    // Update Sabor Modal List
+    function updateSaborModalList(prodIndex) {
+      const saborList = document.getElementById('sabor-list');
+      saborList.innerHTML = '';
+      const prod = productos[prodIndex];
+      prod.sabores.forEach(s => {
+        const div = document.createElement('div');
+        div.textContent = s;
+        div.dataset.sabor = s;
+        div.addEventListener('click', selectSaborFromModal);
+        saborList.appendChild(div);
+      });
+    }
+    // Select Sabor from Modal
+    function selectSaborFromModal(e) {
+      const sabor = e.target.dataset.sabor;
+      document.getElementById('sabor-input').value = sabor;
+      document.getElementById('sabor-value').value = sabor;
+      document.getElementById('sabor-select-modal').classList.add('hidden');
     }
     // Funciones para agregar campos dinámicos
     function addTamano(listId, nombre = '', precio = '', stock = '') {
@@ -1153,9 +1269,10 @@
         form.reset();
         showToast('Producto agregado');
         if (document.getElementById('ventas-section').classList.contains('active')) {
-          const productoSelect = document.getElementById('producto-select');
-          productoSelect.value = productos.length - 1;
-          productoSelect.dispatchEvent(new Event('change'));
+          document.getElementById('producto-input').value = nombre;
+          document.getElementById('producto-id').value = productos.length - 1;
+          updateTamanoModalList(productos.length - 1);
+          updateSaborModalList(productos.length - 1);
         }
       });
       importarForm.addEventListener('submit', (e) => {
@@ -1558,9 +1675,9 @@
     // Setup Formulario de Ventas
     function setupVentasForm() {
       const form = document.getElementById('nueva-venta-form');
-      const productoSelect = document.getElementById('producto-select');
-      const tamanoSelect = document.getElementById('tamano-select');
-      const saborSelect = document.getElementById('sabor-select');
+      const productoInput = document.getElementById('producto-input');
+      const tamanoInput = document.getElementById('tamano-input');
+      const saborInput = document.getElementById('sabor-input');
       const precioInput = document.getElementById('precio-input');
       const precioEspecialCheck = document.getElementById('precio-especial-check');
       const cantidadInput = document.getElementById('cantidad-input');
@@ -1585,42 +1702,28 @@
       cantidadInput.addEventListener('change', () => {
         if (parseInt(cantidadInput.value) < 1) cantidadInput.value = 1;
       });
-      productoSelect.addEventListener('change', (e) => {
-        const index = e.target.value;
-        if (!index) return;
-        const prod = productos[index];
-        tamanoSelect.innerHTML = '<option value="">Seleccionar tamaño...</option>';
-        prod.tamanos.forEach((t, i) => {
-          const opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = `${t.nombre} - ${formatCurrency(t.precio)}${t.stock !== undefined ? ` (Stock: ${t.stock})` : ''}`;
-          tamanoSelect.appendChild(opt);
-        });
-        tamanoSelect.disabled = false;
-        saborSelect.innerHTML = '<option value="">Seleccionar sabor...</option>';
-        prod.sabores.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = s;
-          saborSelect.appendChild(opt);
-        });
-        saborSelect.disabled = prod.sabores.length === 0;
+      productoInput.addEventListener('click', () => {
+        document.getElementById('product-select-modal').classList.remove('hidden');
       });
-      tamanoSelect.addEventListener('change', (e) => {
-        const prodIndex = productoSelect.value;
-        const tamIndex = e.target.value;
-        if (!prodIndex || !tamIndex) return;
-        const precio = productos[prodIndex].tamanos[tamIndex].precio;
-        precioInput.value = precio.toFixed(2);
+      tamanoInput.addEventListener('click', () => {
+        if (tamanoInput.disabled) return;
+        document.getElementById('tamano-select-modal').classList.remove('hidden');
       });
+      saborInput.addEventListener('click', () => {
+        if (saborInput.disabled) return;
+        document.getElementById('sabor-select-modal').classList.remove('hidden');
+      });
+      document.getElementById('close-product-select').addEventListener('click', () => document.getElementById('product-select-modal').classList.add('hidden'));
+      document.getElementById('close-tamano-select').addEventListener('click', () => document.getElementById('tamano-select-modal').classList.add('hidden'));
+      document.getElementById('close-sabor-select').addEventListener('click', () => document.getElementById('sabor-select-modal').classList.add('hidden'));
       precioEspecialCheck.addEventListener('change', (e) => {
         precioInput.disabled = !e.target.checked;
       });
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const prodIndex = productoSelect.value;
-        const tamIndex = tamanoSelect.value;
-        const sabor = saborSelect.value;
+        const prodIndex = document.getElementById('producto-id').value;
+        const tamIndex = document.getElementById('tamano-id').value;
+        const sabor = document.getElementById('sabor-value').value;
         const cantidad = parseInt(cantidadInput.value);
         let precio = parseFloat(precioInput.value);
         const prod = productos[prodIndex];
@@ -1646,11 +1749,11 @@
         };
         currentVentaItems.push(item);
         updateVentaTable();
-        productoSelect.focus(); // Mejora UX: enfoca en producto para agregar más rápido
-        tamanoSelect.innerHTML = '<option value="">Seleccionar tamaño...</option>';
-        saborSelect.innerHTML = '<option value="">Seleccionar sabor...</option>';
-        tamanoSelect.disabled = true;
-        saborSelect.disabled = true;
+        productoInput.focus(); // Mejora UX: enfoca en producto para agregar más rápido
+        tamanoInput.value = '';
+        tamanoInput.disabled = true;
+        saborInput.value = '';
+        saborInput.disabled = true;
         precioInput.value = '';
         precioInput.disabled = true;
         precioEspecialCheck.checked = false;
@@ -1771,11 +1874,14 @@
       document.getElementById('cliente-input').value = '';
       document.getElementById('cliente-id').value = '';
       document.getElementById('notas-venta').value = '';
-      document.getElementById('producto-select').value = '';
-      document.getElementById('tamano-select').innerHTML = '<option value="">Seleccionar tamaño...</option>';
-      document.getElementById('sabor-select').innerHTML = '<option value="">Seleccionar sabor...</option>';
-      document.getElementById('tamano-select').disabled = true;
-      document.getElementById('sabor-select').disabled = true;
+      document.getElementById('producto-input').value = '';
+      document.getElementById('producto-id').value = '';
+      document.getElementById('tamano-input').value = '';
+      document.getElementById('tamano-id').value = '';
+      document.getElementById('tamano-input').disabled = true;
+      document.getElementById('sabor-input').value = '';
+      document.getElementById('sabor-value').value = '';
+      document.getElementById('sabor-input').disabled = true;
       document.getElementById('cantidad-input').value = 1;
       document.getElementById('precio-input').value = '';
       document.getElementById('precio-input').disabled = true;
